@@ -21,7 +21,7 @@ async function init() {
       const data = await res.json();
       
       const missingRepos = data
-        .filter(r => !r.fork && r.name.toLowerCase() !== 'nicolaspertierraporfolio' && !knownProjects.some(kp => kp.name === r.name))
+        .filter(r => !r.fork && r.name.toLowerCase() !== 'nicolaspertierraportfolio' && !knownProjects.some(kp => kp.name === r.name))
         .map(r => {
           let live = r.homepage;
           if (!live && r.has_pages) {
