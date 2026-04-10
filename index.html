@@ -1,40 +1,79 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Nicolas Pertierra Porrua Portfolio" />
-    <title>Nicolas Pertierra Porrua // Projects</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div class="loading" id="loader">
-      <h2 style="color: #38bdf8; font-family: 'Outfit', sans-serif;">INITIALIZING...</h2>
-    </div>
 
-    <canvas id="webgl"></canvas>
-    
-    <div id="app">
-      <section class="section hero" id="hero">
-        <h1>Nicolas Pertierra Porrua</h1>
-        <p>Interactive 3D Portfolio</p>
-        <div style="margin-top: 2rem;" class="interactive">
-          <a href="#" class="cv-button">Download CV</a>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Nicolas Pertierra Porrua Portfolio" />
+  <title>Nicolas Pertierra Porrua // Projects</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;600;800&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <div class="loading" id="loader">
+    <h2 style="color: #38bdf8; font-family: 'Outfit', sans-serif;">INITIALIZING...</h2>
+  </div>
+
+  <canvas id="webgl"></canvas>
+
+  <div id="app">
+    <section class="section hero" id="hero">
+      <h1>Nicolas Pertierra Porrua</h1>
+      <p>Interactive 3D Portfolio</p>
+      <div class="hero-actions interactive">
+          <a href="#about" class="hero-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            About Me
+          </a>
+          <a href="#" class="hero-btn cv-btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download CV
+          </a>
+          <a href="#skills" class="hero-btn" onclick="document.getElementById('skills-panel').classList.toggle('active'); return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            Skills & Tech
+          </a>
         </div>
-        <p style="font-size: 1rem; margin-top: 2rem; animation: pulse 2s infinite;">Scroll to explore</p>
-      </section>
-      <div id="projects-container"></div>
-    </div>
-    <script type="module" src="/src/main.js"></script>
-    <style>
-      @keyframes pulse {
-        0% { opacity: 0.5; transform: translateY(0); }
-        50% { opacity: 1; transform: translateY(5px); }
-        100% { opacity: 0.5; transform: translateY(0); }
+        
+        <div class="skills-panel-wrapper interactive">
+          <div id="skills-panel" class="skills-panel">
+            <ul class="skills-list">
+              <li><strong>Frontend & Full-Stack:</strong> Building scalable, responsive architectures using modern web frameworks.</li>
+              <li><strong>UI/UX & Interactive Design:</strong> Crafting premium, user-centric experiences and engaging 3D animations.</li>
+              <li><strong>AI Integration & Local LLMs:</strong> Implementing artificial intelligence, workflow automation, and custom local models.</li>
+              <li><strong>International Profile:</strong> Native speaker in 3 languages, fostering seamless cross-cultural collaboration.</li>
+              <li><strong>Agile & Dev Workflow:</strong> Proficient in modern version control, code review, and agile team environments.</li>
+            </ul>
+          </div>
+        </div>
+      <p style="font-size: 1rem; margin-top: 2rem; animation: pulse 2s infinite;">Scroll to explore</p>
+    </section>
+    <div id="projects-container"></div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+  <style>
+    @keyframes pulse {
+      0% {
+        opacity: 0.5;
+        transform: translateY(0);
       }
-    </style>
-  </body>
+
+      50% {
+        opacity: 1;
+        transform: translateY(5px);
+      }
+
+      100% {
+        opacity: 0.5;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</body>
+
 </html>

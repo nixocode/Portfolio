@@ -49,6 +49,11 @@ async function init() {
   // Generate HTML
   const container = document.getElementById('projects-container');
   
+  function escapeHTML(str) {
+    if (!str) return '';
+    return str.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  
   const themes = [
     { bg: 'rgba(15, 23, 42, 0.4)', border: 'rgba(56, 189, 248, 0.2)', hoverBorder: 'rgba(56, 189, 248, 0.5)' }, // Tailor (Blue)
     { bg: 'rgba(40, 15, 15, 0.4)', border: 'rgba(244, 63, 94, 0.2)', hoverBorder: 'rgba(244, 63, 94, 0.5)' },  // Strike (Rose)
@@ -64,15 +69,15 @@ async function init() {
     section.className = `section project-section ${isRight ? 'project-right' : 'project-left'}`;
     section.innerHTML = `
       <div class="project-details" id="project-${i}" style="--bg-color: ${theme.bg}; --border-color: ${theme.border}; --hover-border: ${theme.hoverBorder};">
-        ${repo.categoryBadge ? `<div class="category-badge">${repo.categoryBadge}</div>` : ''}
-        <h2 class="project-title" style="margin-bottom: 0.5rem;">${repo.title}</h2>
+        ${repo.categoryBadge ? `<div class="category-badge">${escapeHTML(repo.categoryBadge)}</div>` : ''}
+        <h2 class="project-title" style="margin-bottom: 0.5rem;">${escapeHTML(repo.title)}</h2>
         <div class="tech-stack-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
-          ${repo.techStack.map(tech => `<span class="tech-badge">${tech}</span>`).join('')}
+          ${repo.techStack.map(tech => `<span class="tech-badge">${escapeHTML(tech)}</span>`).join('')}
         </div>
-        <p class="project-description">${repo.description}</p>
+        <p class="project-description">${escapeHTML(repo.description)}</p>
         <div class="project-links interactive">
-          ${repo.live_url ? `<a href="${repo.live_url}" target="_blank">View Live Project</a>` : ''}
-          ${!repo.live_url && repo.html_url ? `<a href="${repo.html_url}" target="_blank">View Source Code</a>` : ''}
+          ${repo.live_url ? `<a href="${encodeURI(repo.live_url)}" target="_blank">View Live Project</a>` : ''}
+          ${!repo.live_url && repo.html_url ? `<a href="${encodeURI(repo.html_url)}" target="_blank">View Source Code</a>` : ''}
         </div>
       </div>
     `;
