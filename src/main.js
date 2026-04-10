@@ -7,13 +7,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 const USERNAME = 'nixocode';
 const knownProjects = [
-  { type: 'header', title: 'Websites & Business' },
-  { type: 'project', name: 'Tailor', title: 'Tailor', description: 'A modern web design agency combining AI efficiency with human craftsmanship for premium custom websites.', live_url: 'https://nixocode.github.io/Tailor/' },
-  { type: 'project', name: 'la-zona-segura', title: 'La Zona Segura', description: 'A professional industrial safety blog and incident management platform dedicated to risk mitigation in construction.', live_url: 'https://lazonaseguralzs.github.io/lazonasegura/' },
-  { type: 'header', title: 'Games & Simulations' },
-  { type: 'project', name: 'global-strike-game', title: 'Global Strike — Nuclear Strategy', description: 'A visually immersive browser-based nuclear strategy game simulating DEFCON protocols and global conflict scenarios.', live_url: 'https://nixocode.github.io/global-strike-game/' },
-  { type: 'project', name: 'global-conflict-tracker', title: 'Global Conflict Tracker', description: 'An interactive, real-time 3D globe visualizing active geopolitical conflicts and regional tensions.', live_url: 'https://nixocode.github.io/global-conflict-tracker/' },
-  { type: 'header', title: 'Study & Open Source' }
+  { name: 'Tailor', title: 'Tailor', categoryBadge: 'Enterprise & Product Design', description: 'A modern web design agency combining AI efficiency with human craftsmanship for premium custom websites.', live_url: 'https://nixocode.github.io/Tailor/' },
+  { name: 'la-zona-segura', title: 'La Zona Segura', description: 'A professional industrial safety blog and incident management platform dedicated to risk mitigation in construction.', live_url: 'https://lazonaseguralzs.github.io/lazonasegura/' },
+  { name: 'global-strike-game', title: 'Global Strike — Nuclear Strategy', categoryBadge: 'Interactive Simulations', description: 'A visually immersive browser-based nuclear strategy game simulating DEFCON protocols and global conflict scenarios.', live_url: 'https://nixocode.github.io/global-strike-game/' },
+  { name: 'global-conflict-tracker', title: 'Global Conflict Tracker', description: 'An interactive, real-time 3D globe visualizing active geopolitical conflicts and regional tensions.', live_url: 'https://nixocode.github.io/global-conflict-tracker/' }
 ];
 
 async function init() {
@@ -31,7 +28,6 @@ async function init() {
             live = `https://${USERNAME}.github.io/${r.name}/`;
           }
           return {
-            type: 'project',
             name: r.name,
             title: r.name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             description: r.description || 'Open source project by nixocode.',
@@ -40,6 +36,9 @@ async function init() {
           };
         });
         
+      if (missingRepos.length > 0) {
+        missingRepos[0].categoryBadge = 'Applied Studies & Open Source';
+      }
       repos = [...knownProjects, ...missingRepos.slice(0, 4)];
     }
   } catch (err) {
@@ -56,37 +55,23 @@ async function init() {
     { bg: 'rgba(15, 30, 20, 0.4)', border: 'rgba(16, 185, 129, 0.2)', hoverBorder: 'rgba(16, 185, 129, 0.5)' }   // Tracker (Green)
   ];
 
-  let themeIndex = 0;
-  let projectIndex = 0;
-
   repos.forEach((repo, i) => {
     const section = document.createElement('section');
+    const isRight = i % 2 === 0;
+    const theme = themes[i % themes.length];
     
-    if (repo.type === 'header') {
-      section.className = 'section category-section';
-      section.innerHTML = `
-        <div class="category-header" id="project-${i}">
-          <h2>${repo.title}</h2>
+    section.className = `section project-section ${isRight ? 'project-right' : 'project-left'}`;
+    section.innerHTML = `
+      <div class="project-details" id="project-${i}" style="--bg-color: ${theme.bg}; --border-color: ${theme.border}; --hover-border: ${theme.hoverBorder};">
+        ${repo.categoryBadge ? `<div class="category-badge">${repo.categoryBadge}</div>` : ''}
+        <h2 class="project-title">${repo.title}</h2>
+        <p class="project-description">${repo.description}</p>
+        <div class="project-links interactive">
+          ${repo.live_url ? `<a href="${repo.live_url}" target="_blank">View Live Project</a>` : ''}
+          ${!repo.live_url && repo.html_url ? `<a href="${repo.html_url}" target="_blank">View Source Code</a>` : ''}
         </div>
-      `;
-    } else {
-      const isRight = projectIndex % 2 === 0;
-      const theme = themes[themeIndex % themes.length];
-      
-      section.className = `section project-section ${isRight ? 'project-right' : 'project-left'}`;
-      section.innerHTML = `
-        <div class="project-details" id="project-${i}" style="--bg-color: ${theme.bg}; --border-color: ${theme.border}; --hover-border: ${theme.hoverBorder};">
-          <h2 class="project-title">${repo.title}</h2>
-          <p class="project-description">${repo.description}</p>
-          <div class="project-links interactive">
-            ${repo.live_url ? `<a href="${repo.live_url}" target="_blank">View Live Project</a>` : ''}
-            ${!repo.live_url && repo.html_url ? `<a href="${repo.html_url}" target="_blank">View Source Code</a>` : ''}
-          </div>
-        </div>
-      `;
-      themeIndex++;
-      projectIndex++;
-    }
+      </div>
+    `;
     container.appendChild(section);
   });
 
@@ -147,14 +132,16 @@ function setupThreeBase(repos) {
 
   // Create 3D Objects for Projects
   repos.forEach((repo, i) => {
-    const geometries = [
-      new THREE.IcosahedronGeometry(1.4, 0),
-      new THREE.TorusKnotGeometry(0.9, 0.3, 128, 32),
-      new THREE.OctahedronGeometry(1.4, 0),
-      new THREE.TorusGeometry(1.2, 0.4, 32, 64)
-    ];
-    
-    const mathGeo = geometries[i % geometries.length];
+    let mathGeo;
+    if (repo.name.includes('global-strike') || repo.name.includes('conflict')) {
+      mathGeo = new THREE.SphereGeometry(1.2, 32, 32); 
+    } else if (repo.name.includes('zona-segura')) {
+      mathGeo = new THREE.ConeGeometry(1, 2, 32);
+    } else if (repo.name.includes('Tailor')) {
+      mathGeo = new THREE.OctahedronGeometry(1.4, 0);
+    } else {
+      mathGeo = new THREE.IcosahedronGeometry(1.4, 0);
+    }
     
     const material = new THREE.MeshPhysicalMaterial({
       color: i % 2 === 0 ? 0x38bdf8 : 0x94a3b8,
