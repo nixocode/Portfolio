@@ -111,14 +111,14 @@ body {
   box-shadow: 0 8px 25px rgba(14, 165, 233, 0.5);
 }
 
-.skills-panel-wrapper {
+.panels-container {
   position: relative;
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
 }
 
-.skills-panel {
+.info-panel {
   position: absolute;
   top: 100%;
   left: 50%;
@@ -139,12 +139,20 @@ body {
   pointer-events: none;
 }
 
-.skills-panel.active {
+.info-panel.active {
   padding: 1.5rem 2rem;
   max-height: 500px;
   opacity: 1;
   pointer-events: auto;
   transform: translateX(-50%) translateY(2rem);
+}
+
+.about-text {
+  font-family: 'Inter', sans-serif;
+  color: #f8fafc;
+  line-height: 1.6;
+  font-size: 1.1rem;
+  margin: 0;
 }
 
 .skills-list {
