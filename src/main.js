@@ -119,7 +119,7 @@ function setupThreeBase(repos) {
   pointLight1.position.set(5, 5, 5);
   scene.add(pointLight1);
   
-  const pointLight2 = new THREE.PointLight(0xc084fc, 2, 50);
+  const pointLight2 = new THREE.PointLight(0x94a3b8, 2, 50);
   pointLight2.position.set(-5, -5, -5);
   scene.add(pointLight2);
 
@@ -138,7 +138,7 @@ function setupThreeBase(repos) {
     const mathGeo = geometries[i % geometries.length];
     
     const material = new THREE.MeshPhysicalMaterial({
-      color: i % 2 === 0 ? 0x38bdf8 : 0xc084fc,
+      color: i % 2 === 0 ? 0x38bdf8 : 0x94a3b8,
       metalness: 0.2,
       roughness: 0.1,
       transparent: true,
