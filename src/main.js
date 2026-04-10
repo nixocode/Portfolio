@@ -7,10 +7,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 const USERNAME = 'nixocode';
 const knownProjects = [
-  { name: 'Tailor', title: 'Tailor', description: 'GitHub Pages deployment for Tailor.', live_url: 'https://nixocode.github.io/Tailor/' },
-  { name: 'global-strike-game', title: 'Global Strike — Nuclear Strategy', description: 'A realistic browser-based nuclear strategy game simulating global conflict and DEFCON protocols.', live_url: 'https://nixocode.github.io/global-strike-game/' },
-  { name: 'la-zona-segura', title: 'La Zona Segura', description: 'Professional industrial safety blog and incident management platform for risk mitigation.', live_url: 'https://lazonaseguralzs.github.io/lazonasegura/' },
-  { name: 'global-conflict-tracker', title: 'Global Conflict Tracker', description: 'A 3D interactive globe tracking active geopolitical conflicts in real-time.', live_url: 'https://nixocode.github.io/global-conflict-tracker/' }
+  { name: 'Tailor', title: 'Tailor', description: 'A modern web design agency combining AI efficiency with human craftsmanship for premium custom websites.', live_url: 'https://nixocode.github.io/Tailor/' },
+  { name: 'global-strike-game', title: 'Global Strike — Nuclear Strategy', description: 'A visually immersive browser-based nuclear strategy game simulating DEFCON protocols and global conflict scenarios.', live_url: 'https://nixocode.github.io/global-strike-game/' },
+  { name: 'la-zona-segura', title: 'La Zona Segura', description: 'A professional industrial safety blog and incident management platform dedicated to risk mitigation in construction.', live_url: 'https://lazonaseguralzs.github.io/lazonasegura/' },
+  { name: 'global-conflict-tracker', title: 'Global Conflict Tracker', description: 'An interactive, real-time 3D globe visualizing active geopolitical conflicts and regional tensions.', live_url: 'https://nixocode.github.io/global-conflict-tracker/' }
 ];
 
 async function init() {
@@ -44,12 +44,22 @@ async function init() {
 
   // Generate HTML
   const container = document.getElementById('projects-container');
+  
+  const themes = [
+    { bg: 'rgba(15, 23, 42, 0.4)', border: 'rgba(56, 189, 248, 0.2)', hoverBorder: 'rgba(56, 189, 248, 0.5)' }, // Tailor (Blue)
+    { bg: 'rgba(40, 15, 15, 0.4)', border: 'rgba(244, 63, 94, 0.2)', hoverBorder: 'rgba(244, 63, 94, 0.5)' },  // Strike (Rose)
+    { bg: 'rgba(30, 25, 10, 0.4)', border: 'rgba(250, 204, 21, 0.2)', hoverBorder: 'rgba(250, 204, 21, 0.5)' },  // Safety (Yellow)
+    { bg: 'rgba(15, 30, 20, 0.4)', border: 'rgba(16, 185, 129, 0.2)', hoverBorder: 'rgba(16, 185, 129, 0.5)' }   // Tracker (Green)
+  ];
+
   repos.forEach((repo, i) => {
     const section = document.createElement('section');
     const isRight = i % 2 === 0;
+    const theme = themes[i % themes.length];
+    
     section.className = `section project-section ${isRight ? 'project-right' : 'project-left'}`;
     section.innerHTML = `
-      <div class="project-details" id="project-${i}">
+      <div class="project-details" id="project-${i}" style="--bg-color: ${theme.bg}; --border-color: ${theme.border}; --hover-border: ${theme.hoverBorder};">
         <h2 class="project-title">${repo.title}</h2>
         <p class="project-description">${repo.description}</p>
         <div class="project-links interactive">
