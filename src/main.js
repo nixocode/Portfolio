@@ -7,6 +7,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const USERNAME = 'nixocode';
 const knownProjects = [
+  { name: 'Tailor', title: 'Tailor', description: 'GitHub Pages deployment for Tailor.', live_url: 'https://nixocode.github.io/Tailor/' },
   { name: 'global-strike-game', title: 'Global Strike — Nuclear Strategy', description: 'A realistic browser-based nuclear strategy game simulating global conflict and DEFCON protocols.', live_url: 'https://nixocode.github.io/global-strike-game/' },
   { name: 'la-zona-segura', title: 'La Zona Segura', description: 'Professional industrial safety blog and incident management platform for risk mitigation.', live_url: 'https://lazonaseguralzs.github.io/lazonasegura/' },
   { name: 'global-conflict-tracker', title: 'Global Conflict Tracker', description: 'A 3D interactive globe tracking active geopolitical conflicts in real-time.', live_url: 'https://nixocode.github.io/global-conflict-tracker/' }
@@ -177,23 +178,31 @@ function setupThreeBase(repos) {
     scrub: 1,
     onUpdate: (self) => {
       camera.position.z = 2 - self.progress * maxScroll;
-      camera.rotation.y = Math.sin(self.progress * Math.PI * 2) * 0.1;
-      camera.position.x = Math.sin(self.progress * Math.PI * 2) * 0.5;
+      camera.rotation.y = Math.sin(self.progress * Math.PI * 2) * 0.15;
+      camera.position.x = Math.sin(self.progress * Math.PI * 2) * 0.6;
+      camera.rotation.z = Math.cos(self.progress * Math.PI * 2) * 0.05;
+      camera.fov = 75 + self.progress * 15;
+      camera.updateProjectionMatrix();
     }
   });
 
   repos.forEach((_, i) => {
-    gsap.to(`#project-${i}`, {
-      scrollTrigger: {
-        trigger: `#project-${i}`,
-        start: 'top 85%',
-        end: 'top 40%',
-        scrub: 1,
-      },
-      y: 0,
-      opacity: 1,
-      duration: 1
-    });
+    gsap.fromTo(`#project-${i}`, 
+      { y: 150, opacity: 0, scale: 0.8 },
+      {
+        scrollTrigger: {
+          trigger: `#project-${i}`,
+          start: 'top 85%',
+          end: 'top 40%',
+          scrub: 1,
+        },
+        y: 0,
+        opacity: 1,
+        scale: 1,
+        duration: 1,
+        ease: "power2.out"
+      }
+    );
   });
 
   window.addEventListener('resize', () => {
