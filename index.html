@@ -3,86 +3,129 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Nicolas Pertierra Porrua Portfolio" />
-  <title>Nicolas Pertierra Porrua // Projects</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Nicolas Pertierra Porrua — Creative Developer & 3D Portfolio" />
+  <meta name="theme-color" content="#05070d" />
+  <title>Nicolas Pertierra Porrua // Neural Portfolio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;600;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
 </head>
 
 <body>
-  <div class="loading" id="loader">
-    <h2 style="color: #38bdf8; font-family: 'Outfit', sans-serif;">INITIALIZING...</h2>
+
+  <!-- Cinematic loader: tracks real asset + font readiness -->
+  <div class="loader" id="loader">
+    <div class="loader-panel loader-panel-top"></div>
+    <div class="loader-panel loader-panel-bottom"></div>
+    <div class="loader-inner">
+      <div class="loader-label">INITIALIZING NEURAL FIELD</div>
+      <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+      <div class="loader-pct-wrap">
+        <span class="loader-pct">000</span><span class="loader-pct-suffix">%</span>
+      </div>
+    </div>
   </div>
 
   <canvas id="webgl"></canvas>
 
-  <div id="app">
+  <!-- Fixed nav sits outside #app so it never participates in scroll transforms -->
+  <header class="top-nav">
+    <div class="nav-brand">NPP<span class="nav-brand-accent">//</span></div>
+    <div class="nav-status">
+      <span class="status-dot"></span>
+      <span>Available for work — 2026</span>
+    </div>
+  </header>
+
+  <main id="app">
     <section class="section hero" id="hero">
+      <div class="hero-eyebrow interactive">Creative Developer · Barcelona</div>
       <h1>Nicolas Pertierra Porrua</h1>
-      <p>Interactive 3D Portfolio</p>
-        <div class="hero-actions interactive">
-          <a href="#about" class="hero-btn" onclick="document.getElementById('about-panel').classList.toggle('active'); document.getElementById('skills-panel').classList.remove('active'); return false;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            About Me
-          </a>
-          <a href="#" class="hero-btn cv-btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Download CV
-          </a>
-          <a href="#skills" class="hero-btn" onclick="document.getElementById('skills-panel').classList.toggle('active'); document.getElementById('about-panel').classList.remove('active'); return false;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-            Skills & Tech
-          </a>
-        </div>
-        
-        <div class="panels-container interactive">
-          <div id="about-panel" class="info-panel">
-            <div class="about-text">
-              <p>Digital marketer, content creator and developer with a native command of English, Spanish and Portuguese. Based in Barcelona, with hands-on experience across the full content cycle — strategy, copywriting, design, photography and video.</p>
-              <p>Naturally curious about technology and driven by how it's reshaping creative work. I pick up tools fast, integrate them into my workflow and stay ahead of what's coming — currently working daily with AI across ideation, visual production, content strategy and development.</p>
-              <p>I think in multiple languages and multiple markets. That combination of linguistic fluency, creative range and technical curiosity is what I bring to every project.</p>
-              <p>Currently studying in Barcelona and actively looking for a role where marketing, technology and international growth intersect.</p>
-            </div>
+      <p class="hero-subtitle">A neural portfolio — built where human craft meets machine intelligence.</p>
+
+      <div class="hero-actions interactive">
+        <button type="button" class="hero-btn" data-panel="about">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          About Me
+        </button>
+        <a href="#" class="hero-btn cv-btn-primary" download>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download CV
+        </a>
+        <button type="button" class="hero-btn" data-panel="skills">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          Skills & Tech
+        </button>
+      </div>
+
+      <div class="panels-container interactive">
+        <div id="about-panel" class="info-panel">
+          <div class="panel-label">// ABOUT</div>
+          <div class="about-text">
+            <p>Digital marketer, content creator and developer with a native command of English, Spanish
+              and Portuguese. Based in Barcelona, with hands-on experience across the full content cycle —
+              strategy, copywriting, design, photography and video.</p>
+            <p>Naturally curious about technology and driven by how it's reshaping creative work. I pick up
+              tools fast, integrate them into my workflow and stay ahead of what's coming — currently
+              working daily with AI across ideation, visual production, content strategy and development.</p>
+            <p>I think in multiple languages and multiple markets. That combination of linguistic fluency,
+              creative range and technical curiosity is what I bring to every project.</p>
+            <p>Currently studying in Barcelona and actively looking for a role where marketing, technology
+              and international growth intersect.</p>
           </div>
-          
-          <div id="skills-panel" class="info-panel">
-            <ul class="skills-list">
-              <li><strong>Frontend & Full-Stack:</strong> Building scalable, responsive architectures using modern web frameworks.</li>
-              <li><strong>UI/UX & Interactive Design:</strong> Crafting premium, user-centric experiences and engaging 3D animations.</li>
-              <li><strong>AI Integration & Local LLMs:</strong> Implementing artificial intelligence, workflow automation, and custom local models.</li>
-              <li><strong>International Profile:</strong> Native speaker in 3 languages, fostering seamless cross-cultural collaboration.</li>
-              <li><strong>Agile & Dev Workflow:</strong> Proficient in modern version control, code review, and agile team environments.</li>
-            </ul>
-          </div>
         </div>
-      <p style="font-size: 1rem; margin-top: 2rem; animation: pulse 2s infinite;">Scroll to explore</p>
+
+        <div id="skills-panel" class="info-panel">
+          <div class="panel-label">// CAPABILITIES</div>
+          <ul class="skills-list">
+            <li><strong>Frontend & Full-Stack:</strong> Scalable, responsive architectures with modern web
+              frameworks and WebGL.</li>
+            <li><strong>UI/UX & Interactive Design:</strong> Premium, user-centric experiences and cinematic
+              3D animation.</li>
+            <li><strong>AI Integration & Local LLMs:</strong> Artificial intelligence, workflow automation
+              and custom local models in production.</li>
+            <li><strong>International Profile:</strong> Native speaker in three languages, fluent across
+              cultures and markets.</li>
+            <li><strong>Agile & Dev Workflow:</strong> Modern version control, code review and agile team
+              environments.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="scroll-cue">
+        <span>Scroll to traverse the network</span>
+        <div class="scroll-cue-line"></div>
+      </div>
     </section>
+
     <div id="projects-container"></div>
-  </div>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">Nicolas Pertierra Porrua</div>
+        <div class="footer-meta">Barcelona · 2026 — all signals live.</div>
+      </div>
+    </footer>
+  </main>
+
   <script type="module" src="/src/main.js"></script>
-  <style>
-    @keyframes pulse {
-      0% {
-        opacity: 0.5;
-        transform: translateY(0);
-      }
-
-      50% {
-        opacity: 1;
-        transform: translateY(5px);
-      }
-
-      100% {
-        opacity: 0.5;
-        transform: translateY(0);
-      }
-    }
-  </style>
 </body>
 
 </html>
