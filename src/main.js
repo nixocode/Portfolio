@@ -7,10 +7,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 const USERNAME = 'nixocode';
 const knownProjects = [
-  { name: 'Tailor', title: 'Tailor', categoryBadge: 'Enterprise & Product Design', description: 'A modern web design agency combining AI efficiency with human craftsmanship for premium custom websites.', live_url: 'https://nixocode.github.io/Tailor/' },
-  { name: 'la-zona-segura', title: 'La Zona Segura', description: 'A professional industrial safety blog and incident management platform dedicated to risk mitigation in construction.', live_url: 'https://lazonaseguralzs.github.io/lazonasegura/' },
-  { name: 'global-strike-game', title: 'Global Strike — Nuclear Strategy', categoryBadge: 'Interactive Simulations', description: 'A visually immersive browser-based nuclear strategy game simulating DEFCON protocols and global conflict scenarios.', live_url: 'https://nixocode.github.io/global-strike-game/' },
-  { name: 'global-conflict-tracker', title: 'Global Conflict Tracker', description: 'An interactive, real-time 3D globe visualizing active geopolitical conflicts and regional tensions.', live_url: 'https://nixocode.github.io/global-conflict-tracker/' }
+  { name: 'Tailor', title: 'Tailor', categoryBadge: 'Enterprise & Product Design', techStack: ['HTML', 'CSS', 'JavaScript'], description: 'A modern web design agency combining AI efficiency with human craftsmanship for premium custom websites.', live_url: 'https://nixocode.github.io/Tailor/' },
+  { name: 'la-zona-segura', title: 'La Zona Segura', techStack: ['Jekyll', 'HTML', 'CSS'], description: 'A professional industrial safety blog and incident management platform dedicated to risk mitigation in construction.', live_url: 'https://lazonaseguralzs.github.io/lazonasegura/' },
+  { name: 'global-strike-game', title: 'Global Strike — Nuclear Strategy', categoryBadge: 'Interactive Simulations', techStack: ['Three.js', 'HTML', 'CSS'], description: 'A visually immersive browser-based nuclear strategy game simulating DEFCON protocols and global conflict scenarios.', live_url: 'https://nixocode.github.io/global-strike-game/' },
+  { name: 'global-conflict-tracker', title: 'Global Conflict Tracker', techStack: ['D3.js', 'JavaScript', 'CSS'], description: 'An interactive, real-time 3D globe visualizing active geopolitical conflicts and regional tensions.', live_url: 'https://nixocode.github.io/global-conflict-tracker/' }
 ];
 
 async function init() {
@@ -30,6 +30,7 @@ async function init() {
           return {
             name: r.name,
             title: r.name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            techStack: r.language ? [r.language] : ['Code'],
             description: r.description || 'Open source project by nixocode.',
             live_url: live,
             html_url: r.html_url
@@ -64,7 +65,10 @@ async function init() {
     section.innerHTML = `
       <div class="project-details" id="project-${i}" style="--bg-color: ${theme.bg}; --border-color: ${theme.border}; --hover-border: ${theme.hoverBorder};">
         ${repo.categoryBadge ? `<div class="category-badge">${repo.categoryBadge}</div>` : ''}
-        <h2 class="project-title">${repo.title}</h2>
+        <h2 class="project-title" style="margin-bottom: 0.5rem;">${repo.title}</h2>
+        <div class="tech-stack-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+          ${repo.techStack.map(tech => `<span class="tech-badge">${tech}</span>`).join('')}
+        </div>
         <p class="project-description">${repo.description}</p>
         <div class="project-links interactive">
           ${repo.live_url ? `<a href="${repo.live_url}" target="_blank">View Live Project</a>` : ''}

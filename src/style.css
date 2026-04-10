@@ -185,6 +185,18 @@ body {
   border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
+.tech-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.02em;
+}
+
 /* Responsive adjustments */
 @media screen and (max-width: 768px) {
   .hero h1 {
