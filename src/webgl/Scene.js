@@ -130,8 +130,11 @@ export class Scene {
   _bindEvents() {
     this._onResize = this._onResize.bind(this);
     this._onMouse = this._onMouse.bind(this);
+    this._onTouch = this._onTouch.bind(this);
     window.addEventListener('resize', this._onResize);
     window.addEventListener('mousemove', this._onMouse, { passive: true });
+    // Mobile: gentle parallax from touch drag so the hero doesn't feel flat.
+    window.addEventListener('touchmove', this._onTouch, { passive: true });
   }
 
   _onResize() {
@@ -154,6 +157,14 @@ export class Scene {
     // Normalized -1..1
     this.mouse.tx = (e.clientX / this.size.w) * 2 - 1;
     this.mouse.ty = -((e.clientY / this.size.h) * 2 - 1);
+  }
+
+  _onTouch(e) {
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    // Gentler parallax range on touch so the scene breathes without feeling jittery.
+    this.mouse.tx = ((t.clientX / this.size.w) * 2 - 1) * 0.6;
+    this.mouse.ty = -((t.clientY / this.size.h) * 2 - 1) * 0.6;
   }
 
   setScroll(v) {

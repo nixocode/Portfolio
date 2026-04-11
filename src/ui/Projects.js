@@ -47,16 +47,40 @@ export async function loadProjects() {
         r.name.toLowerCase() !== 'nicolaspertierraportfolio' &&
         !knownProjects.some(kp => kp.name === r.name)
       )
-      .map(r => ({
-        name: r.name,
-        title: r.name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        techStack: r.language ? [r.language] : ['Code'],
-        description: r.description || 'Open source project by nixocode.',
-        live_url: r.homepage || (r.has_pages ? `https://${USERNAME}.github.io/${r.name}/` : null),
-        html_url: r.html_url,
-      }));
+      .map(r => {
+        // Build a richer tech stack: language + inferred tags from topics.
+        const topics = Array.isArray(r.topics) ? r.topics : [];
+        const stack = [];
+        if (r.language) stack.push(r.language);
+        topics.slice(0, 3).forEach(t => {
+          const label = t
+            .replace(/-/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase());
+          if (!stack.some(s => s.toLowerCase() === label.toLowerCase())) {
+            stack.push(label);
+          }
+        });
+        if (stack.length === 0) stack.push('Web', 'Open Source');
 
-    if (extras.length > 0) extras[0].categoryBadge = 'Applied Studies & Open Source';
+        const title = r.name
+          .replace(/[-_]/g, ' ')
+          .replace(/\b\w/g, l => l.toUpperCase());
+
+        const description = r.description
+          ? r.description
+          : `An experimental build exploring ${title.toLowerCase()} — part of an ongoing open source portfolio.`;
+
+        return {
+          name: r.name,
+          title,
+          categoryBadge: 'Applied Studies & Open Source',
+          techStack: stack,
+          description,
+          live_url: r.homepage || (r.has_pages ? `https://${USERNAME}.github.io/${r.name}/` : null),
+          html_url: r.html_url,
+        };
+      });
+
     const merged = [...knownProjects, ...extras.slice(0, 4)];
     writeCache(merged);
     return merged;
@@ -78,6 +102,10 @@ function escapeHTML(str) {
 
 export function renderProjects(projects, container) {
   container.innerHTML = '';
+  const total = projects.length;
+  const width = Math.max(2, String(total).length);
+  const pad = (n) => String(n).padStart(width, '0');
+
   projects.forEach((repo, i) => {
     const section = document.createElement('section');
     const isRight = i % 2 === 0;
@@ -85,7 +113,7 @@ export function renderProjects(projects, container) {
     section.dataset.index = i;
     section.innerHTML = `
       <div class="project-details" id="project-${i}">
-        <div class="project-index">0${i + 1} / 0${projects.length}</div>
+        <div class="project-index">${pad(i + 1)} / ${pad(total)}</div>
         ${repo.categoryBadge ? `<div class="category-badge">${escapeHTML(repo.categoryBadge)}</div>` : ''}
         <h2 class="project-title split-target">${escapeHTML(repo.title)}</h2>
         <div class="tech-stack-container">

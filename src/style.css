@@ -40,9 +40,50 @@ html, body {
 
 body { min-height: 100vh; }
 
-/* Hide native cursor wherever the custom one is active (desktop only) */
+/* Hide native cursor wherever the custom one is active (desktop only),
+   but respect users who explicitly prefer high-visibility cursors. */
 @media (hover: hover) and (pointer: fine) {
-  body, a, button { cursor: none; }
+  body:not(.cursor-disabled),
+  body:not(.cursor-disabled) a,
+  body:not(.cursor-disabled) button { cursor: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body, a, button { cursor: auto !important; }
+  .cursor-dot, .cursor-ring { display: none !important; }
+}
+/* Users who set a forced-colors / high contrast mode get the native cursor back. */
+@media (forced-colors: active) {
+  body, a, button { cursor: auto !important; }
+  .cursor-dot, .cursor-ring { display: none !important; }
+}
+
+/* Skip to content — visible only on focus */
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 1rem;
+  z-index: 2000;
+  padding: 0.75rem 1.25rem;
+  background: var(--accent-cold);
+  color: var(--bg-deep);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: top 0.25s var(--ease-expo);
+}
+.skip-link:focus {
+  top: 1rem;
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+/* Global focus-visible style for keyboard users */
+:focus-visible {
+  outline: 2px solid var(--accent-cold);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 /* =========================================================================
@@ -174,13 +215,12 @@ body.cursor-node .cursor-dot {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem clamp(1.5rem, 4vw, 3rem);
+  padding: 1.25rem clamp(1.25rem, 4vw, 3rem);
   z-index: 20;
   font-family: var(--font-mono);
   font-size: 0.8rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  /* Apple-style frosted glass nav */
   background: rgba(5, 7, 13, 0.55);
   backdrop-filter: saturate(180%) blur(24px);
   -webkit-backdrop-filter: saturate(180%) blur(24px);
@@ -203,6 +243,7 @@ body.cursor-node .cursor-dot {
   background: var(--accent-cold);
   box-shadow: 0 0 12px var(--accent-cold);
   animation: breathe 2.4s ease-in-out infinite;
+  display: inline-block;
 }
 @keyframes breathe {
   0%, 100% { opacity: 0.55; }
@@ -228,13 +269,13 @@ body.cursor-node .cursor-dot {
   align-items: center;
   text-align: center;
   padding-top: 8rem;
-  /* Radial dark vignette — protects text contrast without blocking the WebGL bg */
+  padding-bottom: 10rem;
   background:
     radial-gradient(
-      ellipse 75% 78% at center 40%,
-      rgba(5, 7, 13, 0.82) 0%,
-      rgba(5, 7, 13, 0.52) 45%,
-      rgba(5, 7, 13, 0.15) 70%,
+      ellipse 78% 82% at center 42%,
+      rgba(5, 7, 13, 0.84) 0%,
+      rgba(5, 7, 13, 0.55) 45%,
+      rgba(5, 7, 13, 0.18) 70%,
       transparent 100%
     );
 }
@@ -256,7 +297,7 @@ body.cursor-node .cursor-dot {
 }
 .hero h1 {
   font-family: var(--font-display);
-  font-size: clamp(2.6rem, 7vw, 6rem);
+  font-size: clamp(2.4rem, 7vw, 6rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -264,7 +305,6 @@ body.cursor-node .cursor-dot {
   max-width: 14ch;
   margin-bottom: 1.25rem;
 }
-/* SplitText support — chars need a masking wrapper */
 .hero h1 .word {
   display: inline-block;
   overflow: hidden;
@@ -280,23 +320,24 @@ body.cursor-node .cursor-dot {
   font-size: clamp(1rem, 1.4vw, 1.2rem);
   font-weight: 400;
   color: var(--text-secondary);
-  max-width: 44ch;
-  line-height: 1.6;
+  max-width: 52ch;
+  line-height: 1.65;
   margin-bottom: 2.5rem;
   text-shadow: 0 1px 24px rgba(0, 0, 0, 0.85), 0 0 60px rgba(5, 7, 13, 0.6);
 }
 .hero-actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  max-width: 820px;
 }
 .hero-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.9rem 1.6rem;
+  gap: 0.55rem;
+  padding: 0.85rem 1.5rem;
   background: rgba(10, 14, 24, 0.55);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -306,8 +347,9 @@ body.cursor-node .cursor-dot {
   border-radius: 999px;
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   letter-spacing: 0.02em;
+  cursor: pointer;
   transition: background 0.3s var(--ease-smooth),
               border-color 0.3s var(--ease-smooth),
               color 0.3s var(--ease-smooth),
@@ -333,18 +375,16 @@ body.cursor-node .cursor-dot {
   box-shadow: 0 0 40px rgba(92, 224, 255, 0.45);
 }
 
-/* Info panels */
+/* Info panels — now push layout (no absolute overlap) */
 .panels-container {
   position: relative;
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
+  display: grid;
+  gap: 1rem;
 }
 .info-panel {
-  position: absolute;
-  top: 1rem;
-  left: 50%;
-  transform: translateX(-50%) translateY(0);
   width: 100%;
   background: rgba(10, 14, 24, 0.85);
   backdrop-filter: blur(20px);
@@ -358,18 +398,49 @@ body.cursor-node .cursor-dot {
   transition: max-height 0.5s var(--ease-expo),
               opacity 0.4s var(--ease-smooth),
               padding 0.5s var(--ease-expo),
-              transform 0.5s var(--ease-expo);
+              margin 0.5s var(--ease-expo);
   text-align: left;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5),
               0 0 0 1px rgba(92, 224, 255, 0.05) inset;
   pointer-events: none;
+  position: relative;
 }
 .info-panel.active {
-  padding: 1.75rem 2rem;
-  max-height: 600px;
+  padding: 2rem 2.25rem 1.85rem;
+  max-height: 900px;
   opacity: 1;
   pointer-events: auto;
-  transform: translateX(-50%) translateY(1rem);
+  margin-top: 0.5rem;
+}
+.panel-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(92, 224, 255, 0.06);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-glass);
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: background 0.25s var(--ease-smooth),
+              color 0.25s var(--ease-smooth),
+              border-color 0.25s var(--ease-smooth),
+              opacity 0.25s var(--ease-smooth);
+}
+.info-panel.active .panel-close {
+  opacity: 1;
+  pointer-events: auto;
+}
+.panel-close:hover {
+  background: rgba(92, 224, 255, 0.15);
+  color: var(--text-primary);
+  border-color: var(--accent-cold);
 }
 .panel-label {
   font-family: var(--font-mono);
@@ -412,12 +483,9 @@ body.cursor-node .cursor-dot {
   font-weight: 600;
 }
 
-/* Scroll cue */
+/* Scroll cue — no longer absolute so it can't overlap */
 .scroll-cue {
-  position: absolute;
-  bottom: 3rem;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: 3.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -425,15 +493,25 @@ body.cursor-node .cursor-dot {
   font-family: var(--font-mono);
   font-size: 0.7rem;
   letter-spacing: 0.25em;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-transform: uppercase;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8);
+  padding: 0.5rem 1rem;
+  background: rgba(5, 7, 13, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 999px;
+  border: 1px solid var(--border-glass);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
+}
+.scroll-cue span {
+  display: inline-block;
 }
 .scroll-cue-line {
-  width: 1px; height: 48px;
+  width: 1px; height: 32px;
   background: linear-gradient(to bottom, var(--accent-cold) 0%, transparent 100%);
   position: relative;
   overflow: hidden;
+  margin-top: 0.25rem;
 }
 .scroll-cue-line::after {
   content: '';
@@ -448,6 +526,35 @@ body.cursor-node .cursor-dot {
 @keyframes scroll-pulse {
   0%   { top: -100%; }
   100% { top: 100%; }
+}
+
+/* =========================================================================
+   Section divider (hero → projects)
+   ========================================================================= */
+.section-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 4rem clamp(1.5rem, 8vw, 8rem) 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  color: var(--accent-cold);
+  text-transform: uppercase;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(92, 224, 255, 0.35), transparent);
+}
+.divider-label {
+  white-space: nowrap;
+  text-shadow: 0 0 20px rgba(92, 224, 255, 0.5);
 }
 
 /* =========================================================================
@@ -603,37 +710,168 @@ body.cursor-node .cursor-dot {
    Footer
    ========================================================================= */
 .site-footer {
-  padding: 6rem clamp(1.5rem, 8vw, 8rem) 3rem;
+  padding: 5rem clamp(1.5rem, 8vw, 8rem) 2.5rem;
   border-top: 1px solid var(--border-glass);
-  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.4));
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.55));
+  position: relative;
+}
+.site-footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  width: clamp(120px, 30vw, 280px);
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(to right, transparent, var(--accent-cold), transparent);
+  opacity: 0.6;
 }
 .footer-inner {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.footer-col-brand .footer-brand {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+.footer-tagline {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  max-width: 40ch;
+}
+.footer-contact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.85rem 1.5rem;
+  background: linear-gradient(135deg, #0a4657, #5ce0ff 140%);
+  color: var(--bg-deep);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 0 25px rgba(92, 224, 255, 0.25);
+  transition: background 0.3s var(--ease-smooth),
+              box-shadow 0.3s var(--ease-smooth),
+              transform 0.3s var(--ease-smooth);
+}
+.footer-contact-btn:hover {
+  background: linear-gradient(135deg, #0f5f77, #7ee6ff 140%);
+  box-shadow: 0 0 40px rgba(92, 224, 255, 0.45);
+}
+.footer-col-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  color: var(--accent-cold);
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 1rem 0.7rem 0.85rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.25s var(--ease-smooth),
+              border-color 0.25s var(--ease-smooth),
+              color 0.25s var(--ease-smooth);
+  width: 100%;
+}
+.footer-link .link-arrow {
+  margin-left: auto;
+  opacity: 0.5;
+  transition: transform 0.25s var(--ease-expo), opacity 0.25s var(--ease-smooth);
+}
+.footer-link:hover {
+  background: rgba(92, 224, 255, 0.08);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+.footer-link:hover .link-arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.footer-bottom {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 1rem;
+  align-items: center;
+  max-width: 1200px;
+  margin: 2rem auto 0;
+  padding-top: 1.25rem;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
   color: var(--text-muted);
   text-transform: uppercase;
 }
-.footer-brand { color: var(--text-primary); }
+.footer-signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
 /* =========================================================================
    Responsive
    ========================================================================= */
 @media screen and (max-width: 900px) {
-  .section { padding: 5rem 1.5rem; min-height: 90vh; }
+  .section { padding: 5rem 1.5rem; min-height: auto; }
+  .hero { padding-top: 7rem; padding-bottom: 5rem; min-height: 100vh; }
+  .project-section { min-height: 90vh; }
   .project-details { padding: 2rem 1.5rem; max-width: 100%; }
   .project-right .project-details,
   .project-left  .project-details { margin: 0 auto; }
-  .hero-actions { gap: 0.6rem; }
-  .hero-btn { padding: 0.8rem 1.25rem; font-size: 0.85rem; }
-  .top-nav { padding: 1rem 1.25rem; font-size: 0.7rem; }
+  .hero-actions { gap: 0.5rem; }
+  .hero-btn { padding: 0.75rem 1.15rem; font-size: 0.82rem; }
+  .top-nav { padding: 1rem 1.25rem; font-size: 0.68rem; }
+  .nav-status span:last-child { display: none; }
   .project-links { flex-direction: column; align-items: stretch; }
   .project-links a { justify-content: center; }
+  .info-panel.active { padding: 1.5rem 1.35rem; }
+  .panel-close { top: 0.75rem; right: 0.75rem; width: 30px; height: 30px; }
+  .scroll-cue { margin-top: 2.5rem; }
+  .section-divider { padding: 2.5rem 1.5rem 1rem; gap: 1rem; font-size: 0.66rem; }
+
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-bottom: 2rem;
+  }
+  .footer-bottom { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+  .site-footer { padding: 4rem 1.5rem 2rem; }
+}
+
+@media screen and (max-width: 520px) {
+  .hero h1 { font-size: clamp(2rem, 9vw, 3rem); }
+  .hero-subtitle { font-size: 0.95rem; }
+  .hero-btn { padding: 0.7rem 1rem; font-size: 0.78rem; }
+  .hero-btn svg { width: 14px; height: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

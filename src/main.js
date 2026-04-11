@@ -108,7 +108,14 @@ async function bootstrap() {
     projectNodes.setActiveByIndex(active);
   };
 
-  gsap.ticker.add(() => scene.tick(1 / 60));
+  // GSAP's ticker callback provides real elapsed time in seconds — use it
+  // so we match the display's actual refresh rate (120Hz, 60Hz, 30Hz).
+  // Clamp between 0 and 0.1s so a tab regaining focus can't produce a huge jump.
+  gsap.ticker.lagSmoothing(1000, 16);
+  gsap.ticker.add((_t, deltaMs) => {
+    const dt = Math.min(0.1, Math.max(0, (deltaMs || 16) / 1000));
+    scene.tick(dt);
+  });
 
   sceneReadyResolve();
 }

@@ -1,37 +1,105 @@
 // Hero UI: panel toggles, CV download, magnetic buttons, entry reveal.
-// Removes the inline onclick soup from index.html.
+// Handles keyboard (Escape to close), aria state, contact action, and
+// close-buttons inside each panel.
 
 import gsap from 'gsap';
 import { magnetizeAll } from './MagneticButton.js';
 import { revealHeadline } from './Typography.js';
 
-export function initHero() {
-  // Toggle behavior for About / Skills panels.
-  const panels = {
-    about: document.getElementById('about-panel'),
-    skills: document.getElementById('skills-panel'),
-  };
+// Central contact action — one place to change if you ever swap email for a form.
+const CONTACT_EMAIL = 'npertierra7@gmail.com';
+const CONTACT_SUBJECT = 'Hello Nicolas — from your portfolio';
+const CONTACT_BODY =
+  "Hi Nicolas,\n\nI came across your portfolio and I'd love to talk about\n\n— \n";
 
-  document.querySelectorAll('[data-panel]').forEach((btn) => {
+function triggerContact() {
+  const href =
+    `mailto:${CONTACT_EMAIL}` +
+    `?subject=${encodeURIComponent(CONTACT_SUBJECT)}` +
+    `&body=${encodeURIComponent(CONTACT_BODY)}`;
+  window.location.href = href;
+}
+
+export function initHero() {
+  const panelIds = ['about', 'skills', 'interests', 'courses'];
+  const panels = {};
+  panelIds.forEach((id) => {
+    panels[id] = document.getElementById(`${id}-panel`);
+  });
+
+  const triggers = Array.from(document.querySelectorAll('[data-panel]'));
+
+  function setPanel(name, force) {
+    const target = panels[name];
+    if (!target) return;
+    const willOpen = force ?? !target.classList.contains('active');
+
+    // Close all
+    Object.values(panels).forEach((p) => p && p.classList.remove('active'));
+    triggers.forEach((t) => t.setAttribute('aria-expanded', 'false'));
+
+    if (willOpen) {
+      target.classList.add('active');
+      const trig = triggers.find((t) => t.dataset.panel === name);
+      if (trig) trig.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  function closeAll() {
+    Object.values(panels).forEach((p) => p && p.classList.remove('active'));
+    triggers.forEach((t) => t.setAttribute('aria-expanded', 'false'));
+  }
+
+  triggers.forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      const name = btn.dataset.panel;
-      const target = panels[name];
-      if (!target) return;
-
-      const isActive = target.classList.contains('active');
-      Object.values(panels).forEach((p) => p && p.classList.remove('active'));
-      if (!isActive) target.classList.add('active');
+      setPanel(btn.dataset.panel);
     });
   });
 
-  // Magnetic pull on interactive buttons.
+  // Close buttons inside panels
+  document.querySelectorAll('.info-panel .panel-close').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeAll();
+    });
+  });
+
+  // Keyboard: Escape closes any open panel
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const anyOpen = Object.values(panels).some(
+        (p) => p && p.classList.contains('active')
+      );
+      if (anyOpen) {
+        e.preventDefault();
+        closeAll();
+        // Return focus to the first hero trigger so keyboard users don't get lost.
+        const first = triggers[0];
+        if (first) first.focus();
+      }
+    }
+  });
+
+  // Magnetic pull on interactive buttons (desktop only).
   magnetizeAll('.hero-btn', { strength: 0.3, max: 18 });
 
-  // Close panels on outside click.
+  // Contact action wiring — any element with [data-contact-action] or #contact-btn
+  const contactNodes = document.querySelectorAll(
+    '#contact-btn, [data-contact-action]'
+  );
+  contactNodes.forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      triggerContact();
+    });
+  });
+
+  // Close panels on outside click (but not on contact/footer controls).
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.hero-actions, .info-panel')) {
-      Object.values(panels).forEach((p) => p && p.classList.remove('active'));
+      closeAll();
     }
   });
 }
