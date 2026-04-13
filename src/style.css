@@ -19,9 +19,9 @@
   --border-glass:  rgba(92, 224, 255, 0.10);
   --border-strong: rgba(92, 224, 255, 0.25);
 
-  --font-display:  'Space Grotesk', 'Outfit', system-ui, sans-serif;
-  --font-body:     'Inter', system-ui, sans-serif;
-  --font-mono:     'JetBrains Mono', ui-monospace, monospace;
+  --font-display:  -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif;
+  --font-body:     -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif;
+  --font-mono:     'SF Mono', SFMono-Regular, ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace;
 
   --ease-expo:     cubic-bezier(0.16, 1, 0.3, 1);
   --ease-smooth:   cubic-bezier(0.4, 0, 0.2, 1);
