@@ -7,7 +7,7 @@ import { magnetizeAll } from './MagneticButton.js';
 import { revealHeadline } from './Typography.js';
 
 // Central contact action — one place to change if you ever swap email for a form.
-const CONTACT_EMAIL = 'npertierra7@gmail.com';
+const CONTACT_EMAIL = 'npertierraporrua@gmail.com';
 const CONTACT_SUBJECT = 'Hello Nicolas — from your portfolio';
 const CONTACT_BODY =
   "Hi Nicolas,\n\nI came across your portfolio and I'd love to talk about\n\n— \n";
