@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://nixocode.github.io/nicolaspertierraportfolio/sitemap.xml
+Sitemap: https://nixocode.github.io/Portfolio/sitemap.xml
