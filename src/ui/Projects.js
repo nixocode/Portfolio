@@ -9,6 +9,7 @@ const ASSET = (p) => `${import.meta.env.BASE_URL}${p}`;
 // Map of repo-name → local screenshot. Used for both knownProjects and
 // fetched extras (looked up by name). Keep lowercased to match lookups.
 const PROJECT_IMAGES = {
+  'content-marketing':        ASSET('projects/content-marketing.jpg'),
   'tailor':                   ASSET('projects/tailor.jpg'),
   'la-zona-segura':           ASSET('projects/la-zona-segura.jpg'),
   'global-strike-game':       ASSET('projects/global-strike-game.jpg'),
@@ -21,6 +22,7 @@ const PROJECT_IMAGES = {
 const imageFor = (name) => PROJECT_IMAGES[String(name || '').toLowerCase()] || null;
 
 export const knownProjects = [
+  { name: 'Content-marketing', title: 'Content & Marketing', categoryBadge: 'Content Creation & Social Media', techStack: ['Instagram', 'Photography', 'Production'], description: 'End-to-end social content — planning, capture, production, analytics. 2× follower and engagement growth, measurable sales impact.', live_url: 'https://nixocode.github.io/Content-marketing/', image: imageFor('content-marketing') },
   { name: 'Tailor', title: 'Tailor', categoryBadge: 'Enterprise & Product Design', techStack: ['HTML', 'CSS', 'JavaScript'], description: 'A modern web design agency combining AI efficiency with human craftsmanship for premium custom websites.', live_url: 'https://nixocode.github.io/Tailor/', image: imageFor('tailor') },
   { name: 'la-zona-segura', title: 'La Zona Segura', techStack: ['Jekyll', 'HTML', 'CSS'], description: 'A professional industrial safety blog and incident management platform dedicated to risk mitigation in construction.', live_url: 'https://lazonaseguralzs.github.io/lazonasegura/', image: imageFor('la-zona-segura') },
   { name: 'global-strike-game', title: 'Global Strike — Nuclear Strategy', categoryBadge: 'Interactive Simulations', techStack: ['Three.js', 'HTML', 'CSS'], description: 'A visually immersive browser-based nuclear strategy game simulating DEFCON protocols and global conflict scenarios.', live_url: 'https://nixocode.github.io/global-strike-game/', image: imageFor('global-strike-game') },
