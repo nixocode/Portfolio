@@ -110,27 +110,29 @@ export function revealHero() {
   const actions = document.querySelector('.hero-actions');
   const scrollCue = document.querySelector('.scroll-cue');
 
+  // Halved durations across the whole intro — feels snappier, less
+  // "loading screen", more "here I am".
   const tl = gsap.timeline();
-  if (h1) tl.add(revealHeadline(h1, { stagger: 0.03 }), 0);
+  if (h1) tl.add(revealHeadline(h1, { stagger: 0.015 }), 0);
   if (sub) {
     tl.fromTo(sub,
       { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.9, ease: 'expo.out' },
-      '-=0.6'
+      { y: 0, opacity: 1, duration: 0.45, ease: 'expo.out' },
+      '-=0.3'
     );
   }
   if (actions) {
     tl.fromTo(actions,
       { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.9, ease: 'expo.out' },
-      '-=0.7'
+      { y: 0, opacity: 1, duration: 0.45, ease: 'expo.out' },
+      '-=0.35'
     );
   }
   if (scrollCue) {
     tl.fromTo(scrollCue,
       { opacity: 0 },
-      { opacity: 1, duration: 0.8, ease: 'power2.out' },
-      '-=0.3'
+      { opacity: 1, duration: 0.4, ease: 'power2.out' },
+      '-=0.15'
     );
   }
   return tl;

@@ -5,8 +5,10 @@ precision highp float;
 
 uniform float uTime;
 uniform float uPulse;
-uniform vec3  uWarm;   // #ffc88a-ish (inner core)
-uniform vec3  uCold;   // #5ce0ff-ish (outer rim)
+uniform vec3  uWarm;   // inner core (biome-tinted)
+uniform vec3  uCold;   // outer rim  (biome-tinted)
+// 0 at hero (monochrome grey) → 1 deep descent (full biome colour).
+uniform float uSaturation;
 
 varying vec3 vNormalW;
 varying vec3 vViewDir;
@@ -17,11 +19,17 @@ void main() {
   float fres = 1.0 - max(dot(vNormalW, vViewDir), 0.0);
   fres = pow(fres, 2.2);
 
+  // Desaturate toward neutral grey at the top of the page so the hero
+  // reads monochrome; colour only emerges as the camera descends.
+  vec3 grey = vec3(0.55);
+  vec3 warm = mix(grey, uWarm, uSaturation);
+  vec3 cold = mix(grey, uCold, uSaturation);
+
   // Warm core — visible where fresnel is weak (center).
-  vec3 core = uWarm * (1.0 - fres) * (1.4 + uPulse * 0.8);
+  vec3 core = warm * (1.0 - fres) * (1.4 + uPulse * 0.8);
 
   // Cold rim — visible at edges.
-  vec3 rim = uCold * fres * (1.6 + uPulse * 1.2);
+  vec3 rim = cold * fres * (1.6 + uPulse * 1.2);
 
   // Subtle synaptic flicker on the rim.
   float flicker = 0.9 + 0.1 * sin(uTime * 6.0 + vBreath * 20.0);

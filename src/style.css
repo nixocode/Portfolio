@@ -4,25 +4,28 @@
    ========================================================================= */
 
 :root {
-  --bg-deep:       #05070d;
-  --bg-surface:    #0a0e18;
-  --bg-elevated:   #0d1220;
+  --bg-deep:       #07080a;
+  --bg-surface:    #0d0f12;
+  --bg-elevated:   #13161b;
 
-  --accent-cold:   #5ce0ff;  /* reserved: Contact + View Live buttons, focus outlines */
-  --accent-cold-2: #2aa6c4;  /* deeper shade */
-  --accent-warm:   #ffc88a;  /* human warmth — use sparingly */
-  --accent-neutral:#d4dbe5;  /* charcoal-grey accent for labels, eyebrows, dividers */
+  --accent-cold:   #e8eaed;  /* primary accent — near-white */
+  --accent-cold-2: #8b9099;  /* mid grey */
+  --accent-warm:   #c9ccd1;  /* secondary accent — soft grey */
+  --accent-neutral:#a8adb5;  /* labels, eyebrows, dividers */
 
-  --text-primary:  #eef3fa;
-  --text-secondary:#b6c2d4;
-  --text-muted:    #6a7789;
+  --text-primary:  #f2f3f5;
+  --text-secondary:#b2b6bd;
+  --text-muted:    #6b6f77;
 
-  --border-glass:  rgba(92, 224, 255, 0.10);
-  --border-strong: rgba(92, 224, 255, 0.25);
+  --border-glass:  rgba(232, 234, 237, 0.08);
+  --border-strong: rgba(232, 234, 237, 0.22);
 
-  --font-display:  -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif;
-  --font-body:     -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif;
-  --font-mono:     'SF Mono', SFMono-Regular, ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace;
+  --font-display:  ui-rounded, -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro', 'Helvetica Neue', 'Inter', system-ui, sans-serif;
+  --font-body:     -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro', 'Helvetica Neue', 'Inter', system-ui, sans-serif;
+  /* `--font-mono` now points at the Apple SF Pro stack too — the old SF Mono /
+     JetBrains Mono monospace look is banished. Wide-tracked uppercase labels
+     stay readable but now feel like Apple HIG overlines, not terminal output. */
+  --font-mono:     -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro', 'Helvetica Neue', 'Inter', system-ui, sans-serif;
 
   --ease-expo:     cubic-bezier(0.16, 1, 0.3, 1);
   --ease-smooth:   cubic-bezier(0.4, 0, 0.2, 1);
@@ -34,9 +37,12 @@ html, body {
   background: var(--bg-deep);
   color: var(--text-primary);
   font-family: var(--font-body);
+  font-feature-settings: 'ss01', 'ss02', 'cv11', 'kern';
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  letter-spacing: -0.005em;
 }
 
 body { min-height: 100vh; }
@@ -181,7 +187,7 @@ body.cursor-node .cursor-dot {
 .loader-label {
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  letter-spacing: 0.35em;
+  letter-spacing: 0.14em;
   color: var(--accent-neutral);
   text-transform: uppercase;
 }
@@ -222,10 +228,10 @@ body.cursor-node .cursor-dot {
   font-size: 0.8rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  background: rgba(5, 7, 13, 0.55);
+  background: rgba(7, 8, 10, 0.55);
   backdrop-filter: saturate(180%) blur(24px);
   -webkit-backdrop-filter: saturate(180%) blur(24px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .nav-brand {
   color: var(--text-primary);
@@ -287,7 +293,7 @@ body.cursor-node .cursor-dot {
   border-radius: 999px;
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent-neutral);
   background: rgba(5, 7, 13, 0.65);
@@ -298,13 +304,14 @@ body.cursor-node .cursor-dot {
 }
 .hero h1 {
   font-family: var(--font-display);
-  font-size: clamp(1.9rem, 4.8vw, 4rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
-  color: var(--text-primary);
-  max-width: 16ch;
+  font-size: clamp(2.2rem, 5.6vw, 4.6rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  color: #f6f7f9;
+  max-width: 14ch;
   margin-bottom: 1.25rem;
+  text-shadow: 0 1px 30px rgba(0, 0, 0, 0.6);
 }
 .hero h1 .word {
   display: inline-block;
@@ -363,17 +370,17 @@ body.cursor-node .cursor-dot {
   box-shadow: 0 0 22px rgba(212, 219, 229, 0.12);
 }
 .cv-btn-primary {
-  background: linear-gradient(135deg, #0a4657, #5ce0ff 140%);
+  background: linear-gradient(135deg, #1a1c20, #e8eaed 180%);
   border-color: transparent;
-  color: #05070d;
+  color: #07080a;
   font-weight: 600;
-  box-shadow: 0 0 25px rgba(92, 224, 255, 0.25);
+  box-shadow: 0 0 22px rgba(232, 234, 237, 0.18);
 }
 .cv-btn-primary:hover {
-  background: linear-gradient(135deg, #0f5f77, #7ee6ff 140%);
+  background: linear-gradient(135deg, #2a2d32, #ffffff 180%);
   border-color: transparent;
-  color: #05070d;
-  box-shadow: 0 0 40px rgba(92, 224, 255, 0.45);
+  color: #07080a;
+  box-shadow: 0 0 36px rgba(232, 234, 237, 0.32);
 }
 
 /* Info panels — now push layout (no absolute overlap) */
@@ -402,7 +409,7 @@ body.cursor-node .cursor-dot {
               margin 0.5s var(--ease-expo);
   text-align: left;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5),
-              0 0 0 1px rgba(92, 224, 255, 0.05) inset;
+              0 0 0 1px rgba(232, 234, 237, 0.05) inset;
   pointer-events: none;
   position: relative;
 }
@@ -446,7 +453,7 @@ body.cursor-node .cursor-dot {
 .panel-label {
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.1em;
   color: var(--accent-neutral);
   margin-bottom: 1rem;
   text-transform: uppercase;
@@ -485,27 +492,38 @@ body.cursor-node .cursor-dot {
 }
 
 /* Scroll cue — no longer absolute so it can't overlap */
+/* Compact — the picker above now carries the real messaging; this is just
+   a pulsing line cue that scrolling is the next step. */
 .scroll-cue {
-  margin-top: 3.5rem;
+  margin-top: 1.75rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.25em;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  padding: 0.5rem 1rem;
-  background: rgba(5, 7, 13, 0.55);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 999px;
-  border: 1px solid var(--border-glass);
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
+  gap: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .scroll-cue span {
   display: inline-block;
+}
+.scroll-cue-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  line-height: 1;
+}
+.scroll-cue-row .cue-icon {
+  opacity: 0.72;
+  flex-shrink: 0;
+}
+.scroll-cue-row .cue-dot {
+  opacity: 0.4;
+  margin: 0 0.15rem;
 }
 .scroll-cue-line {
   width: 1px; height: 32px;
@@ -513,6 +531,117 @@ body.cursor-node .cursor-dot {
   position: relative;
   overflow: hidden;
   margin-top: 0.25rem;
+}
+
+/* ============================================================
+   Hero branch picker — primary navigation into the three
+   tributaries. Hover selects, Enter/click dives in. Replaces
+   the old "// SELECTED WORK" divider as the legible CTA.
+   ============================================================ */
+.branch-picker {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.1rem 1.4rem 1rem;
+  background: rgba(5, 7, 13, 0.72);
+  backdrop-filter: saturate(160%) blur(18px);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  border: 1px solid var(--border-glass);
+  border-radius: 18px;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(232, 234, 237, 0.04) inset;
+}
+.branch-picker-label {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: 0.78;
+}
+.branch-picker-row {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.branch-picker-hint {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+.branch-chip {
+  --chip-accent: #cfd4dc;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.68rem 1rem 0.68rem 0.85rem;
+  background: rgba(13, 16, 22, 0.6);
+  border: 1px solid rgba(232, 234, 237, 0.10);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition:
+    background 0.25s var(--ease-smooth),
+    border-color 0.25s var(--ease-smooth),
+    transform 0.25s var(--ease-smooth),
+    box-shadow 0.25s var(--ease-smooth);
+}
+.branch-chip:hover,
+.branch-chip:focus-visible,
+.branch-chip[aria-current="true"] {
+  background: rgba(20, 24, 32, 0.88);
+  border-color: color-mix(in srgb, var(--chip-accent) 55%, transparent);
+  transform: translateY(-1px);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.45),
+    0 0 0 1px color-mix(in srgb, var(--chip-accent) 30%, transparent) inset,
+    0 0 20px color-mix(in srgb, var(--chip-accent) 22%, transparent);
+  outline: none;
+}
+.branch-chip .chip-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--chip-accent);
+  box-shadow: 0 0 10px var(--chip-accent);
+  flex-shrink: 0;
+}
+.branch-chip .chip-arrow {
+  opacity: 0.55;
+  transition: transform 0.25s var(--ease-smooth), opacity 0.25s var(--ease-smooth);
+}
+.branch-chip:hover .chip-arrow,
+.branch-chip:focus-visible .chip-arrow,
+.branch-chip[aria-current="true"] .chip-arrow {
+  opacity: 1;
+  transform: translateY(2px);
+  color: var(--chip-accent);
+}
+@media (max-width: 640px) {
+  .branch-picker { padding: 0.9rem 1rem; margin-top: 2rem; }
+  .branch-chip { font-size: 0.78rem; padding: 0.55rem 0.85rem 0.55rem 0.7rem; }
+  .branch-picker-hint { display: none; }
+}
+
+/* Better legibility of the "// Selected work — … " category header below
+   the fold — the bokeh was drowning the text before. Now it sits on a
+   dark readable pill instead of floating over the 3D scene. */
+.category-group-inner {
+  background: rgba(5, 7, 13, 0.78) !important;
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  text-shadow: 0 1px 16px rgba(0, 0, 0, 0.9);
 }
 .scroll-cue-line::after {
   content: '';
@@ -541,7 +670,7 @@ body.cursor-node .cursor-dot {
   padding: 4rem clamp(1.5rem, 8vw, 8rem) 2rem;
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.12em;
   color: var(--accent-neutral);
   text-transform: uppercase;
   max-width: 1400px;
@@ -556,6 +685,92 @@ body.cursor-node .cursor-dot {
 .divider-label {
   white-space: nowrap;
   text-shadow: 0 0 16px rgba(0, 0, 0, 0.6);
+}
+
+/* =========================================================================
+   Category group headers (Marketing / Games / WebDesign branches)
+   ========================================================================= */
+.category-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 5rem clamp(1.5rem, 8vw, 8rem) 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+.category-group-inner {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.9rem 1.8rem;
+  border: 1px solid var(--border-strong);
+  background: rgba(13, 15, 18, 0.55);
+  backdrop-filter: saturate(160%) blur(18px);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-cold);
+}
+.category-group-inner::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-cold);
+  box-shadow: 0 0 12px rgba(232, 234, 237, 0.6);
+}
+.category-group-line {
+  flex: 1;
+  max-width: 260px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(232, 234, 237, 0.35), transparent);
+}
+
+/* =========================================================================
+   Pointer-branching stack
+   ------------------------------------------------------------------------
+   The 3 main branches share one vertical region via CSS grid stacking.
+   Pointer X picks which is active; the inactive two fade, blur and
+   disable their pointer events so scroll passes straight through. This
+   is what makes "move your cursor, change your neural path" work.
+   ========================================================================= */
+.branch-stack {
+  position: relative;
+  display: grid;
+}
+.branch-stack > .branch-track {
+  grid-column: 1;
+  grid-row: 1;
+  transition:
+    opacity 0.55s var(--ease-smooth),
+    filter  0.55s var(--ease-smooth),
+    transform 0.55s var(--ease-smooth);
+  will-change: opacity, filter, transform;
+}
+.branch-stack > .branch-track[data-active="true"] {
+  opacity: 1;
+  filter: none;
+  pointer-events: auto;
+  transform: none;
+  z-index: 2;
+}
+.branch-stack > .branch-track[data-active="false"] {
+  opacity: 0.045;
+  filter: blur(16px) saturate(0.35);
+  pointer-events: none;
+  transform: scale(0.996);
+  z-index: 1;
+}
+.branch-others {
+  margin-top: 6rem;
+  padding-top: 4rem;
+  border-top: 1px solid rgba(232, 234, 237, 0.05);
 }
 
 /* =========================================================================
@@ -577,7 +792,7 @@ body.cursor-node .cursor-dot {
   border-radius: 20px;
   box-shadow:
     0 25px 70px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(92, 224, 255, 0.04) inset;
+    0 0 0 1px rgba(232, 234, 237, 0.04) inset;
   position: relative;
   overflow: hidden;
   will-change: transform, clip-path, opacity;
@@ -589,7 +804,7 @@ body.cursor-node .cursor-dot {
   inset: 0;
   background: radial-gradient(
     600px circle at 0% 0%,
-    rgba(92, 224, 255, 0.06),
+    rgba(232, 234, 237, 0.05),
     transparent 60%
   );
   pointer-events: none;
@@ -654,14 +869,14 @@ body.cursor-node .cursor-dot {
   border-color: var(--border-strong);
   box-shadow:
     0 30px 80px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(92, 224, 255, 0.12) inset,
-    0 0 40px rgba(92, 224, 255, 0.1);
+    0 0 0 1px rgba(232, 234, 237, 0.12) inset,
+    0 0 36px rgba(232, 234, 237, 0.08);
 }
 
 .project-index {
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.1em;
   color: var(--accent-neutral);
   margin-bottom: 1rem;
   text-transform: uppercase;
@@ -687,7 +902,7 @@ body.cursor-node .cursor-dot {
   font-size: clamp(1.8rem, 3.5vw, 2.7rem);
   font-weight: 700;
   line-height: 1.05;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--text-primary);
   margin-bottom: 1.25rem;
 }
@@ -736,7 +951,7 @@ body.cursor-node .cursor-dot {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.35rem;
-  background: rgba(92, 224, 255, 0.08);
+  background: rgba(232, 234, 237, 0.05);
   color: var(--accent-cold);
   text-decoration: none;
   border-radius: 999px;
@@ -757,7 +972,7 @@ body.cursor-node .cursor-dot {
 .project-links a:hover {
   background: var(--accent-cold);
   color: var(--bg-deep);
-  box-shadow: 0 0 30px rgba(92, 224, 255, 0.4);
+  box-shadow: 0 0 28px rgba(232, 234, 237, 0.28);
 }
 .project-links a:hover .arrow {
   transform: translateX(4px);
@@ -811,7 +1026,7 @@ body.cursor-node .cursor-dot {
   align-items: center;
   gap: 0.55rem;
   padding: 0.85rem 1.5rem;
-  background: linear-gradient(135deg, #0a4657, #5ce0ff 140%);
+  background: linear-gradient(135deg, #1a1c20, #e8eaed 180%);
   color: var(--bg-deep);
   border: 1px solid transparent;
   border-radius: 999px;
@@ -819,19 +1034,19 @@ body.cursor-node .cursor-dot {
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  box-shadow: 0 0 25px rgba(92, 224, 255, 0.25);
+  box-shadow: 0 0 22px rgba(232, 234, 237, 0.18);
   transition: background 0.3s var(--ease-smooth),
               box-shadow 0.3s var(--ease-smooth),
               transform 0.3s var(--ease-smooth);
 }
 .footer-contact-btn:hover {
-  background: linear-gradient(135deg, #0f5f77, #7ee6ff 140%);
-  box-shadow: 0 0 40px rgba(92, 224, 255, 0.45);
+  background: linear-gradient(135deg, #2a2d32, #ffffff 180%);
+  box-shadow: 0 0 36px rgba(232, 234, 237, 0.32);
 }
 .footer-col-label {
   font-family: var(--font-mono);
   font-size: 0.68rem;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.12em;
   color: var(--accent-neutral);
   text-transform: uppercase;
   margin-bottom: 1.25rem;

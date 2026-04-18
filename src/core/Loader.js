@@ -41,12 +41,19 @@ export class Loader {
       this.fontsDone = true;
     }
 
-    // Safety net: if nothing ever loads, still finish.
+    // No heavy network assets anymore — mark ready next tick so fonts gate finish.
+    requestAnimationFrame(() => {
+      this.assetsDone = true;
+      this._setProgress(0.9);
+      this._maybeFinish();
+    });
+
+    // Safety net: if fonts never resolve, still finish.
     this.timeout = setTimeout(() => {
       this.assetsDone = true;
       this.fontsDone = true;
       this._maybeFinish();
-    }, 8000);
+    }, 3000);
   }
 
   _setProgress(p) {

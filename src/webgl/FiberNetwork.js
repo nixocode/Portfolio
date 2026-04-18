@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import vertexShader from './shaders/fibers.vert?raw';
 import fragmentShader from './shaders/fibers.frag?raw';
 
-const COLD = new THREE.Color('#5ce0ff');
+const COLD = new THREE.Color('#8a9099');
 
 export class FiberNetwork {
   constructor(scene, { nodeCount = 140, radius = 22, maxConnections = 3, maxDist = 7 } = {}) {

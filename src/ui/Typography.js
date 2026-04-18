@@ -46,7 +46,7 @@ export function revealHeadline(el, { delay = 0, stagger = 0.025 } = {}) {
   return gsap.to(chars, {
     yPercent: 0,
     opacity: 1,
-    duration: 0.9,
+    duration: 0.45,
     ease: 'expo.out',
     stagger,
     delay,

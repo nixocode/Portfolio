@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import vertexShader from './shaders/particles.vert?raw';
 import fragmentShader from './shaders/particles.frag?raw';
 
-const COLD = new THREE.Color('#5ce0ff');
+const COLD = new THREE.Color('#6e7480');
 
 export class NeuralField {
   constructor(scene, { count = 6000, radius = 40 } = {}) {

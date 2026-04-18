@@ -3,6 +3,8 @@
 precision highp float;
 
 uniform vec3 uColor;
+// 0 at hero (monochrome) → 1 at deep descent (full biome colour).
+uniform float uSaturation;
 varying float vAlpha;
 varying float vSeed;
 
@@ -20,7 +22,9 @@ void main() {
   float alpha = (core + halo) * vAlpha;
 
   // Slight hue shift per-particle so the field doesn't look uniform.
-  vec3 col = uColor + vec3(0.05, 0.08, 0.12) * (vSeed - 0.5);
+  vec3 grey = vec3(0.55);
+  vec3 tint = mix(grey, uColor, uSaturation);
+  vec3 col  = tint + vec3(0.05, 0.08, 0.12) * (vSeed - 0.5) * uSaturation;
 
   gl_FragColor = vec4(col, alpha);
 }
