@@ -108,7 +108,11 @@ async function bootstrap() {
   //   marketing S-sweeps, webdesign spirals, games zig-zags.
   const ZONES = ['marketing', 'webdesign', 'games'];
   const ZONE_CENTERS = { marketing: 1 / 6, webdesign: 3 / 6, games: 5 / 6 };
-  const FALLOFF = 0.30; // larger = more overlap/blend between zones
+  // Tighter falloff = crisper zone boundaries = snappier switching.
+  // Damping below still smooths the hand-off so it reads as a fast
+  // crossfade, not a cut — but the RAW weight swings quickly so the
+  // user feels an instant response to cursor movement.
+  const FALLOFF = 0.22;
   // Must match BIOMES[*].x in ProjectNodes — wide spacing so tributaries never cross.
   const branchLanes = { marketing: -14, webdesign: 0, games: 14, others: 22 };
   const branchLengths = ['marketing', 'webdesign', 'games', 'others'].map(
@@ -218,8 +222,25 @@ async function bootstrap() {
   // overshoot, and Lenis re-targets smoothly each tick so holding the
   // key produces a fast continuous descent instead of a series of jolts.
 
-  const getOrderedSections = () =>
-    Array.from(document.querySelectorAll('.project-section'));
+  // Only the ACTIVE tributary's sections plus the always-visible "others"
+  // epilogue. The three main tracks are grid-stacked at the same vertical
+  // position, so returning all sections made ArrowDown hop sideways into
+  // games when the user was navigating webdesign. Scoping to the active
+  // tributary keeps keyboard descent on rails.
+  const getOrderedSections = () => {
+    const active = ZONES.reduce((best, z) =>
+      weights[z] > (weights[best] ?? 0) ? z : best, 'webdesign');
+    const activeTrack = document.querySelector(
+      `.branch-track[data-branch="${active}"]`
+    );
+    const inTrack = activeTrack
+      ? Array.from(activeTrack.querySelectorAll('.project-section'))
+      : [];
+    const others = Array.from(
+      document.querySelectorAll('.branch-others .project-section')
+    );
+    return [...inTrack, ...others];
+  };
 
   // Index of the section whose top is closest to the viewport's upper
   // third — that's the "current" project the user is reading.
@@ -391,19 +412,27 @@ async function bootstrap() {
     let dominant = 'webdesign';
     let maxW = 0;
     ZONES.forEach((z) => {
-      weights[z] = damp(weights[z], raw[z], 0.10, dt);
+      // 0.18 → ~55ms half-life at 60fps. Faster than 0.10's ~120ms so
+      // the crossfade feels immediate instead of molasses, but still
+      // damped enough that wiggling the mouse doesn't produce flicker.
+      weights[z] = damp(weights[z], raw[z], 0.18, dt);
       if (weights[z] > maxW) { maxW = weights[z]; dominant = z; }
     });
 
     // Per-frame DOM: opacity + blur + saturate driven by smoothed weight.
-    // Gives cross-fade between the three overlapping branch tracks.
+    // Tightened — lower max blur (7 vs 12px) so the inactive track stays
+    // legible-as-silhouette instead of smearing, and a harder saturate
+    // contrast so the active card visually pops.
     ZONES.forEach((z) => {
       const el = trackEls[z];
       if (!el) return;
       const w = weights[z];
-      el.style.opacity = (0.04 + w * 0.96).toFixed(3);
-      el.style.filter = `blur(${((1 - w) * 12).toFixed(2)}px) saturate(${(0.35 + w * 0.65).toFixed(2)})`;
-      el.style.pointerEvents = w > 0.5 ? 'auto' : 'none';
+      el.style.opacity = (0.02 + w * 0.98).toFixed(3);
+      el.style.filter = `blur(${((1 - w) * 7).toFixed(2)}px) saturate(${(0.2 + w * 0.8).toFixed(2)})`;
+      // Widen the pointer-events threshold: the dominant track gets
+      // clicks even if its weight hasn't fully cranked to 1 yet during
+      // a crossfade — feels responsive instead of "clicks ignored".
+      el.style.pointerEvents = (z === dominant || w > 0.4) ? 'auto' : 'none';
       el.dataset.active = (z === dominant) ? 'true' : 'false';
     });
 
@@ -425,8 +454,9 @@ async function bootstrap() {
     if (wSum > 0) { tx /= wSum; ty /= wSum; }
     else { tx = branchLanes[dominant]; ty = 0; }
 
-    scene.cameraLaneX = damp(scene.cameraLaneX, tx, 0.10, dt);
-    scene.cameraLaneY = damp(scene.cameraLaneY, ty * 0.4, 0.10, dt);
+    // Camera damp 0.14 — snappier pan between lanes, still smoothed.
+    scene.cameraLaneX = damp(scene.cameraLaneX, tx, 0.14, dt);
+    scene.cameraLaneY = damp(scene.cameraLaneY, ty * 0.4, 0.14, dt);
 
     projectNodes.setActiveCategory(dominant);
 
