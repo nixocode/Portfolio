@@ -97,31 +97,50 @@ export class ProjectNodes {
       this.branchTrunks[cat].push(trunkPoint.clone());
 
       // Per-biome offshoot character.
-      const side = ti % 2 === 0 ? 1 : -1;
+      //
+      // IMPORTANT: each biome's nodes stay on its own side of the screen
+      // — marketing nodes always reach further LEFT of the trunk, games
+      // always RIGHT, webdesign (centre) stays symmetric. This keeps the
+      // left/centre/right viewport zones clean and matches the picker:
+      // click a left-screen node and you get a marketing project, not
+      // a webdesign one bleeding over from an alternating layout.
+      const sideSym = ti % 2 === 0 ? 1 : -1;            // symmetric (webdesign/others)
+      const sideLeft  = -1;                             // marketing — always left
+      const sideRight =  1;                             // games — always right
       let offX, offY, offZ;
       switch (biome.pattern) {
-        case 'organic':
-          offX = side * (2.1 + Math.sin(ti * 0.9) * 0.6);
+        case 'organic': {
+          // Marketing — fan left from the trunk, organic Y/Z variation.
+          const mag = 2.2 + Math.abs(Math.sin(ti * 0.9)) * 0.6;
+          offX = sideLeft * mag;
           offY = Math.cos(ti * 1.1) * 1.0;
           offZ = Math.sin(ti * 0.7) * 1.2;
           break;
-        case 'sharp':
-          offX = side * 2.3;
+        }
+        case 'sharp': {
+          // Games — fan right from the trunk; Y-kick gives visual rhythm.
+          offX = sideRight * (2.3 + (ti % 2) * 0.35);
           offY = (ti % 2 === 0 ? 1 : -1) * 1.0;
           offZ = 0;
           break;
-        case 'grid':
-          offX = side * 2.1;
+        }
+        case 'grid': {
+          // Web / Apps / AI — centre lane; keep symmetric alternation.
+          offX = sideSym * 2.1;
           offY = (ti % 3 - 1) * 1.0;
           offZ = 0;
           break;
+        }
         case 'sparse':
-        default:
-          offX = side * (1.7 + (Math.random() - 0.5) * 0.6);
+        default: {
+          offX = sideSym * (1.7 + (Math.random() - 0.5) * 0.6);
           offY = (Math.random() - 0.5) * 1.8;
           offZ = (Math.random() - 0.5) * 1.5;
           break;
+        }
       }
+      // Kept for bezier midpoint bias below — matches the chosen offshoot side.
+      const side = Math.sign(offX) || 1;
 
       const nodePos = new THREE.Vector3(
         trunkPoint.x + offX,
@@ -457,7 +476,14 @@ export class ProjectNodes {
 
   update(time, dt) {
     this.raycaster.setFromCamera(this.pointer, this.camera);
-    const meshes = this.nodes.map(n => n.mesh);
+    // Only raycast against nodes on the currently-active tributary (plus
+    // the always-visible "others" epilogue). Inactive tributaries are
+    // still in the scene but faded; they must not intercept hovers or
+    // clicks — that's the "click marketing, get Tailor" bug.
+    const active = this._activeCat;
+    const meshes = this.nodes
+      .filter(n => !active || n.category === active || n.category === 'others')
+      .map(n => n.mesh);
     const hit = this.raycaster.intersectObjects(meshes, false)[0];
 
     const prevHovered = this.hovered;
