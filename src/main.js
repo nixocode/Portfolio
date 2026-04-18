@@ -186,30 +186,154 @@ async function bootstrap() {
     chip.addEventListener('click',      () => descendInto(zone));
   });
 
-  // Keyboard navigation: ← → / A D cycle tributaries; ↓ / S descend into
-  // current; ↑ / W return to hero. Ignore when typing in an input or when
-  // the user is in a hero info-panel context where Escape is already bound.
+  // Latch the tributary while the mouse is hovering a project card so
+  // moving the cursor toward "View Live" on a left-aligned Marketing
+  // card doesn't accidentally cross into the right-screen zone and fade
+  // the card out from under the click.
+  const attachCardLatch = () => {
+    document.querySelectorAll('.branch-track .project-section').forEach((sec) => {
+      const zone = sec.closest('.branch-track')?.dataset.branch;
+      if (!zone) return;
+      sec.addEventListener('mouseenter', () => {
+        latchedFrac = ZONE_CENTERS[zone] ?? latchedFrac;
+      });
+      sec.addEventListener('mouseleave', () => {
+        // Don't hard-release here — the free-mouse mousemove with >40px
+        // travel is what naturally unlatches. Leaving the card while
+        // still in the same zone should keep the track stable.
+      });
+    });
+  };
+  attachCardLatch();
+
+  // --- Keyboard navigation ----------------------------------------------
+  //   ← → / A D : cycle tributaries
+  //   ↓  / S    : next project section (autorepeat → fast descent to end)
+  //   ↑  / W    : previous section (autorepeat → fast ascent to hero)
+  //   Space     : open the currently-active project's live URL
+  //
+  // Native browser arrow-scroll was fighting Lenis, so we override:
+  // each keydown scrolls to the next/prev `.project-section`. Browser
+  // autorepeat fires ~30Hz on hold — throttled to 120ms so it doesn't
+  // overshoot, and Lenis re-targets smoothly each tick so holding the
+  // key produces a fast continuous descent instead of a series of jolts.
+
+  const getOrderedSections = () =>
+    Array.from(document.querySelectorAll('.project-section'));
+
+  // Index of the section whose top is closest to the viewport's upper
+  // third — that's the "current" project the user is reading.
+  const currentSectionIndex = (sections) => {
+    const anchor = window.innerHeight * 0.35;
+    let best = 0;
+    let bestDist = Infinity;
+    sections.forEach((el, i) => {
+      const top = el.getBoundingClientRect().top;
+      const d = Math.abs(top - anchor);
+      if (d < bestDist) { bestDist = d; best = i; }
+    });
+    return best;
+  };
+
+  const jumpSection = (dir) => {
+    const sections = getOrderedSections();
+    if (!sections.length) return;
+    const cur = currentSectionIndex(sections);
+    const next = Math.max(0, Math.min(sections.length - 1, cur + dir));
+    // If already at the end and user presses down again, scroll to footer.
+    if (cur === next && dir > 0) {
+      const footer = document.querySelector('footer, .site-footer');
+      if (footer && smooth.scrollTo) {
+        smooth.scrollTo(footer, { duration: 0.6 });
+      } else {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }
+      return;
+    }
+    // If already at the start and user presses up again, scroll to hero.
+    if (cur === next && dir < 0) {
+      const hero = document.getElementById('hero');
+      if (hero && smooth.scrollTo) smooth.scrollTo(hero, { duration: 0.6 });
+      return;
+    }
+    const target = sections[next];
+    // Also pick up the active tributary from the target card's parent so
+    // the WebGL camera follows along on keyboard nav.
+    const trackZone = target.closest('.branch-track')?.dataset.branch;
+    if (trackZone) selectBranch(trackZone);
+    if (smooth.scrollTo) {
+      smooth.scrollTo(target, { offset: -80, duration: 0.55 });
+    } else {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  let lastKeyNavAt = 0;
   window.addEventListener('keydown', (e) => {
     if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
     const current = ZONES.reduce((best, z) =>
       weights[z] > (weights[best] ?? 0) ? z : best, 'webdesign');
     const idx = ZONES.indexOf(current);
     const k = e.key.toLowerCase();
+
+    // Lateral tributary switching — only on fresh key, not autorepeat,
+    // otherwise holding ← would rifle past marketing instantly.
     if (k === 'arrowleft' || k === 'a') {
+      if (e.repeat) { e.preventDefault(); return; }
       e.preventDefault();
       selectBranch(ZONES[Math.max(0, idx - 1)]);
-    } else if (k === 'arrowright' || k === 'd') {
+      return;
+    }
+    if (k === 'arrowright' || k === 'd') {
+      if (e.repeat) { e.preventDefault(); return; }
       e.preventDefault();
       selectBranch(ZONES[Math.min(ZONES.length - 1, idx + 1)]);
-    } else if (k === 'arrowdown' || k === 's') {
+      return;
+    }
+
+    // Vertical scroll — tap = one section, hold = rapid throttled descent.
+    if (k === 'arrowdown' || k === 's') {
       e.preventDefault();
-      descendInto(current);
-    } else if (k === 'arrowup' || k === 'w') {
+      const now = performance.now();
+      if (e.repeat && now - lastKeyNavAt < 120) return;
+      lastKeyNavAt = now;
+      jumpSection(+1);
+      return;
+    }
+    if (k === 'arrowup' || k === 'w') {
       e.preventDefault();
-      const hero = document.getElementById('hero');
-      if (hero) smooth.scrollTo
-        ? smooth.scrollTo(hero, { duration: 1.0 })
-        : hero.scrollIntoView({ behavior: 'smooth' });
+      const now = performance.now();
+      if (e.repeat && now - lastKeyNavAt < 120) return;
+      lastKeyNavAt = now;
+      jumpSection(-1);
+      return;
+    }
+
+    // Space = open the currently-active project's primary URL.
+    // (Browser default would be page-down; we'd rather make Space useful.)
+    // But if focus is on a real button/link we MUST let Space activate it
+    // — hijacking native keyboard activation would break accessibility.
+    if (k === ' ' || e.code === 'Space') {
+      const t = e.target;
+      if (t && (t.tagName === 'BUTTON' || t.tagName === 'A' ||
+                t.getAttribute?.('role') === 'button')) {
+        return;
+      }
+      if (e.repeat) { e.preventDefault(); return; }
+      e.preventDefault();
+      const sections = getOrderedSections();
+      if (!sections.length) return;
+      const cur = sections[currentSectionIndex(sections)];
+      const link = cur?.querySelector('.project-links a[href]');
+      if (link && link.href) {
+        const u = link.href;
+        try {
+          const parsed = new URL(u);
+          if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+            window.open(parsed.href, '_blank', 'noopener,noreferrer');
+          }
+        } catch { /* ignore malformed */ }
+      }
     }
   });
 

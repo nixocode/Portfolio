@@ -782,6 +782,23 @@ body.cursor-node .cursor-dot {
 .project-right .project-details { margin-left: auto; }
 .project-left  .project-details { margin-right: auto; }
 
+/* Pin each tributary's cards to its own horizontal side of the viewport.
+   Overrides the default .project-left / .project-right alternation so
+   that moving the cursor toward a card's "View Live" button never crosses
+   a zone boundary and fades the card out before the click can land. */
+.branch-track[data-branch="marketing"] .project-details {
+  margin-left: 0;
+  margin-right: auto;
+}
+.branch-track[data-branch="webdesign"] .project-details {
+  margin-left: auto;
+  margin-right: auto;
+}
+.branch-track[data-branch="games"] .project-details {
+  margin-left: auto;
+  margin-right: 0;
+}
+
 .project-details {
   max-width: 560px;
   padding: 2.5rem 2.75rem;
