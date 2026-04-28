@@ -18,6 +18,7 @@ const PROJECT_IMAGES = {
   'law-civil-law':            ASSET('projects/law-civil-law.jpg'),
   'pool-guide':               ASSET('projects/pool-guide.jpg'),
   'fresc':                    ASSET('projects/fresc.jpg'),
+  'ai2b':                     ASSET('projects/ai2b.png'),
 };
 const imageFor = (name) => PROJECT_IMAGES[String(name || '').toLowerCase()] || null;
 
