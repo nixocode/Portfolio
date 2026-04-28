@@ -215,6 +215,9 @@ export function renderProjects(projects, container) {
     section.className = `section project-section ${isRight ? 'project-right' : 'project-left'}`;
     section.dataset.index = globalIdx;
     if (repo.category) section.dataset.category = repo.category;
+    // Lowercased name lets CSS target individual project cards if a
+    // particular thumbnail needs custom positioning / overlay tuning.
+    if (repo.name) section.dataset.projectName = String(repo.name).toLowerCase();
     const hasImage = !!repo.image;
     section.innerHTML = `
       <div class="project-details${hasImage ? ' has-image' : ''}" id="project-${globalIdx}">

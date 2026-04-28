@@ -947,6 +947,35 @@ body.cursor-node .cursor-dot {
 @media (prefers-reduced-motion: reduce) {
   .project-bg { filter: none; transform: none; transition: none; }
 }
+
+/* Per-project thumbnail tuning — the default overlay+0.5-opacity recipe
+   works for bright/landscape screenshots, but Ai2B's mobile-portrait
+   screenshot has a focal orb that gets eaten by the heavy diagonal
+   gradient. Bumped opacity, lighter overlay, and pull the bg image up
+   so the orb sits front-and-center inside the card frame. */
+.project-section[data-project-name="ai2b"] .project-bg {
+  opacity: 0.72;
+  filter: blur(1px) saturate(1.05) brightness(1.1);
+  background-position: 30% 28%;
+  -webkit-mask-image: linear-gradient(135deg,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.85) 70%,
+    rgba(0, 0, 0, 0.55) 100%);
+          mask-image: linear-gradient(135deg,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.85) 70%,
+    rgba(0, 0, 0, 0.55) 100%);
+}
+.project-section[data-project-name="ai2b"] .project-details.has-image::after {
+  background: linear-gradient(135deg,
+    rgba(8, 11, 20, 0.55) 0%,
+    rgba(8, 11, 20, 0.28) 60%,
+    rgba(8, 11, 20, 0.10) 100%);
+}
+.project-section[data-project-name="ai2b"] .project-details.has-image:hover .project-bg {
+  opacity: 0.88;
+  filter: blur(0.3px) saturate(1.1) brightness(1.15);
+}
 .project-details:hover {
   border-color: var(--border-strong);
   box-shadow:
