@@ -501,9 +501,12 @@ export class ProjectNodes {
       node.haloMat.opacity = 0.22 + node.material.uniforms.uPulse.value * 0.5;
     });
 
-    // Advance pulse packets along each curve.
+    // Advance pulse packets along each curve. Hidden tributaries skip the
+    // CPU pass entirely — no point recomputing positions for points whose
+    // mesh.visible is false.
     if (this.pulses) {
       this.pulses.forEach(pg => {
+        if (!pg.points.visible) return;
         const { curve, offsets, positions, geom, count, mat } = pg;
         mat.uniforms.uTime.value = time;
         for (let i = 0; i < count; i++) {
@@ -520,21 +523,43 @@ export class ProjectNodes {
 
   // Active branch gets brighter strands, others fade hard so the three
   // tributaries read as physically separate neural networks — not a
-  // single forest. Inactive pulses also dim.
+  // single forest. Inactive nodes / halos / dendrites / pulses are hidden
+  // outright (visible=false) once they've faded — the previous "0.18 opacity
+  // ghost" was what made the scene look mixed up while scrolling, with
+  // marketing nodes drifting on the left while you descended webdesign.
   setActiveCategory(cat) {
     this._activeCat = cat;
-    if (!this.trunks) return;
-    this.trunks.forEach(t => {
-      const active = t.category === cat;
-      t.lines.forEach((l) => {
-        const target = active ? l.baseOpacity * 1.35 : l.baseOpacity * 0.18;
-        l.mat.opacity = damp(l.mat.opacity, target, 0.18, 0.016);
-      });
+    // "others" (Studies & Coursework) is the trailing epilogue — it should
+    // always remain visible regardless of which main tributary is active.
+    const isVisible = (nodeCat) => nodeCat === cat || nodeCat === 'others';
+
+    // Per-node mesh / halo / dendrite visibility.
+    this.nodes.forEach(n => {
+      const show = isVisible(n.category);
+      n.mesh.visible = show;
+      n.halo.visible = show;
+      n.conn.visible = show;
     });
+
+    if (this.trunks) {
+      this.trunks.forEach(t => {
+        const show = isVisible(t.category);
+        t.lines.forEach((l) => {
+          l.line.visible = show;
+          // Keep the opacity damp on the active line so its strands still
+          // breathe between bright/normal — but hidden trunks get pinned
+          // at zero so a re-activation reads as a clean fade-in.
+          const target = show ? l.baseOpacity * 1.35 : 0;
+          l.mat.opacity = damp(l.mat.opacity, target, 0.18, 0.016);
+        });
+      });
+    }
+
     if (this.pulses) {
       this.pulses.forEach(pg => {
-        const active = pg.category === cat;
-        pg._opacityMul = damp(pg._opacityMul ?? 1, active ? 1.2 : 0.2, 0.18, 0.016);
+        const show = isVisible(pg.category);
+        pg.points.visible = show;
+        pg._opacityMul = damp(pg._opacityMul ?? 1, show ? 1.2 : 0, 0.18, 0.016);
       });
     }
   }

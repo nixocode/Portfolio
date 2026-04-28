@@ -98,21 +98,22 @@ async function bootstrap() {
   // --- Smooth scroll ---
   const smooth = new SmoothScroll();
 
-  // --- Pointer-branching with continuous blending ---
-  //   Left third = marketing, center = webdesign/AI, right = games.
-  //   Each zone has a weight (0..1) driven by how close the pointer is
-  //   to that third's centre. Weights smooth-step & normalize, then
-  //   drive: (a) DOM track opacity/blur, (b) camera position as a
-  //   weighted sample of each branch's CatmullRom curve. Riding the
-  //   curve itself is what makes the neural paths feel distinct —
-  //   marketing S-sweeps, webdesign spirals, games zig-zags.
+  // --- PSP / XMB tributary lanes -----------------------------------------
+  //
+  // Three rails (marketing | webdesign | games) live at the same vertical
+  // position. Only the ACTIVE rail is in document flow, so vertical scroll
+  // only traverses the active lane's cards — you can't accidentally
+  // "scroll past" Marketing into Webdesign. To switch lanes, the user
+  // hits ← / →, A / D, or clicks a chip. The inactive rails are visible
+  // off to the sides at depth (slid out, blurred, tilted) — XMB feel.
+  //
+  // ↑ / ↓  : traverse the active lane's project sections (stays on lane)
+  // ← / →  : flip lanes with a horizontal slide animation
+  // Space  : open the centered card's primary link
+  //
+  // Camera & WebGL nodes follow `activeZone` so the 3D scene's nodes are
+  // strictly the ones for the selected lane.
   const ZONES = ['marketing', 'webdesign', 'games'];
-  const ZONE_CENTERS = { marketing: 1 / 6, webdesign: 3 / 6, games: 5 / 6 };
-  // Tighter falloff = crisper zone boundaries = snappier switching.
-  // Damping below still smooths the hand-off so it reads as a fast
-  // crossfade, not a cut — but the RAW weight swings quickly so the
-  // user feels an instant response to cursor movement.
-  const FALLOFF = 0.22;
   // Must match BIOMES[*].x in ProjectNodes — wide spacing so tributaries never cross.
   const branchLanes = { marketing: -14, webdesign: 0, games: 14, others: 22 };
   const branchLengths = ['marketing', 'webdesign', 'games', 'others'].map(
@@ -122,203 +123,185 @@ async function bootstrap() {
   const totalDepth = 6 + (maxBranch - 1) * 5.2 + 10;
 
   const trackEls = {};
-  document.querySelectorAll('.branch-track').forEach((el) => {
+  document.querySelectorAll('[data-branch]').forEach((el) => {
     trackEls[el.dataset.branch] = el;
-    // Remove the CSS transition — JS now drives opacity per frame,
-    // smoothing happens via damped weights so CSS transition would just
-    // fight the per-frame update.
-    el.style.transition = 'none';
   });
 
-  // Raw pointer X (0..1 across viewport). Also settable by the hero
-  // branch-picker (hover), by keyboard (← → / A D), and by clicking a
-  // chip's down-arrow to dive into that tributary.
-  let pointerFrac = 0.5;
-  // When the user explicitly picked a branch (hover chip, key press),
-  // we latch to that zone's centre and ignore mouse X until they move
-  // the mouse again — otherwise hovering a chip in the centre would
-  // snap straight back to "webdesign" the moment they leave.
-  let latchedFrac = null;
-  let lastMouseX = window.innerWidth / 2;
-  const LATCH_RELEASE_PX = 40;
+  // The active rail. CSS selector `[data-active="true"]` keeps it in flow;
+  // siblings get `data-side="left|right|hidden"` based on their position
+  // in the ZONES list relative to the active one.
+  let activeZone = 'webdesign';
 
-  const setFrac = (x) => { pointerFrac = Math.max(0, Math.min(1, x / window.innerWidth)); };
-  window.addEventListener('mousemove', (e) => {
-    // If a latch is active, release it only once the user has moved the
-    // mouse a real distance — tiny jitter shouldn't unlatch.
-    if (latchedFrac != null && Math.abs(e.clientX - lastMouseX) > LATCH_RELEASE_PX) {
-      latchedFrac = null;
-      document.querySelectorAll('.branch-chip[aria-current="true"]').forEach((c) =>
-        c.setAttribute('aria-current', 'false')
-      );
-    }
-    lastMouseX = e.clientX;
-    if (latchedFrac == null) setFrac(e.clientX);
-    else pointerFrac = latchedFrac;
-  }, { passive: true });
-  window.addEventListener('touchmove',  (e) => { const t = e.touches?.[0]; if (t) { latchedFrac = null; setFrac(t.clientX); } }, { passive: true });
-  window.addEventListener('touchstart', (e) => { const t = e.touches?.[0]; if (t) { latchedFrac = null; setFrac(t.clientX); } }, { passive: true });
+  const sideOf = (z, active) => {
+    const i = ZONES.indexOf(z);
+    const j = ZONES.indexOf(active);
+    if (i === j) return null;
+    if (Math.abs(i - j) === 1) return i < j ? 'left' : 'right';
+    return 'hidden'; // 2 lanes away — fully removed (e.g. games when active=marketing)
+  };
 
-  const selectBranch = (zone) => {
-    if (!ZONE_CENTERS[zone]) return;
-    latchedFrac = ZONE_CENTERS[zone];
-    pointerFrac = latchedFrac;
-    // Reflect active state on chips for accessibility + styling.
+  const reflectChipState = (zone) => {
     document.querySelectorAll('.branch-chip').forEach((c) => {
       c.setAttribute('aria-current', c.dataset.branch === zone ? 'true' : 'false');
     });
   };
 
-  // Find the first DOM section for a branch and smooth-scroll to it.
-  const descendInto = (zone) => {
-    selectBranch(zone);
-    const target = document.querySelector(
-      `.branch-track[data-branch="${zone}"] .project-section`
-    );
-    if (target) {
-      smooth.scrollTo
-        ? smooth.scrollTo(target, { offset: -60, duration: 1.0 })
-        : target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Apply data-active / data-side / data-enter so CSS animates the swap.
+  const applyLaneState = (zone, enterFrom = null) => {
+    ZONES.forEach((z) => {
+      const el = trackEls[z];
+      if (!el) return;
+      const isActive = z === zone;
+      el.dataset.active = isActive ? 'true' : 'false';
+      if (isActive) {
+        if (enterFrom) el.dataset.enter = enterFrom;
+        else delete el.dataset.enter;
+        delete el.dataset.side;
+      } else {
+        delete el.dataset.enter;
+        el.dataset.side = sideOf(z, zone);
+      }
+    });
+    // The "others" epilogue track is always visible and never moves —
+    // it just shouldn't get side classes.
+    if (trackEls.others) {
+      trackEls.others.dataset.active = 'true';
+      delete trackEls.others.dataset.side;
+      delete trackEls.others.dataset.enter;
     }
   };
 
-  // Wire each chip. Hover selects (latches), click dives in.
-  document.querySelectorAll('.branch-chip').forEach((chip) => {
-    const zone = chip.dataset.branch;
-    chip.addEventListener('mouseenter', () => selectBranch(zone));
-    chip.addEventListener('focus',      () => selectBranch(zone));
-    chip.addEventListener('click',      () => descendInto(zone));
-  });
-
-  // Latch the tributary while the mouse is hovering a project card so
-  // moving the cursor toward "View Live" on a left-aligned Marketing
-  // card doesn't accidentally cross into the right-screen zone and fade
-  // the card out from under the click.
-  const attachCardLatch = () => {
-    document.querySelectorAll('.branch-track .project-section').forEach((sec) => {
-      const zone = sec.closest('.branch-track')?.dataset.branch;
-      if (!zone) return;
-      sec.addEventListener('mouseenter', () => {
-        latchedFrac = ZONE_CENTERS[zone] ?? latchedFrac;
-      });
-      sec.addEventListener('mouseleave', () => {
-        // Don't hard-release here — the free-mouse mousemove with >40px
-        // travel is what naturally unlatches. Leaving the card while
-        // still in the same zone should keep the track stable.
-      });
+  // Smooth-scroll to the start of `zone`'s first card. Run inside rAF so
+  // the just-applied data-active swap (which flips `position: absolute →
+  // relative`) has a chance to flush layout before Lenis measures the
+  // target's offsetTop — otherwise the scroll target is computed against
+  // the previous layout and we land at the wrong Y.
+  const scrollLaneToTop = (zone) => {
+    requestAnimationFrame(() => {
+      const first = trackEls[zone]?.querySelector('.project-section');
+      if (first && smooth.scrollTo) {
+        smooth.scrollTo(first, { offset: -80, duration: 0.55 });
+      }
     });
   };
-  attachCardLatch();
 
-  // --- Keyboard navigation ----------------------------------------------
-  //   ← → / A D : cycle tributaries
-  //   ↓  / S    : next project section (autorepeat → fast descent to end)
-  //   ↑  / W    : previous section (autorepeat → fast ascent to hero)
-  //   Space     : open the currently-active project's live URL
-  //
-  // Native browser arrow-scroll was fighting Lenis, so we override:
-  // each keydown scrolls to the next/prev `.project-section`. Browser
-  // autorepeat fires ~30Hz on hold — throttled to 120ms so it doesn't
-  // overshoot, and Lenis re-targets smoothly each tick so holding the
-  // key produces a fast continuous descent instead of a series of jolts.
-
-  // Only the ACTIVE tributary's sections plus the always-visible "others"
-  // epilogue. The three main tracks are grid-stacked at the same vertical
-  // position, so returning all sections made ArrowDown hop sideways into
-  // games when the user was navigating webdesign. Scoping to the active
-  // tributary keeps keyboard descent on rails.
-  const getOrderedSections = () => {
-    const active = ZONES.reduce((best, z) =>
-      weights[z] > (weights[best] ?? 0) ? z : best, 'webdesign');
-    const activeTrack = document.querySelector(
-      `.branch-track[data-branch="${active}"]`
-    );
-    const inTrack = activeTrack
-      ? Array.from(activeTrack.querySelectorAll('.project-section'))
-      : [];
-    const others = Array.from(
-      document.querySelectorAll('.branch-others .project-section')
-    );
-    return [...inTrack, ...others];
+  const setActiveZone = (zone, { animateFrom = null, scrollToTop = false } = {}) => {
+    if (!ZONES.includes(zone)) return;
+    // Same-zone re-click = bring the user back to the top of that lane —
+    // PSP-style menu re-entry. No animation required, just a scroll.
+    if (zone === activeZone) {
+      reflectChipState(zone);
+      if (scrollToTop) scrollLaneToTop(zone);
+      return;
+    }
+    const fromIdx = ZONES.indexOf(activeZone);
+    const toIdx = ZONES.indexOf(zone);
+    const enterFrom = animateFrom || (toIdx > fromIdx ? 'right' : 'left');
+    activeZone = zone;
+    applyLaneState(zone, enterFrom);
+    reflectChipState(zone);
+    if (scrollToTop) scrollLaneToTop(zone);
   };
 
-  // Index of the section whose top is closest to the viewport's upper
-  // third — that's the "current" project the user is reading.
-  const currentSectionIndex = (sections) => {
-    const anchor = window.innerHeight * 0.35;
+  // Initial paint.
+  applyLaneState(activeZone);
+  reflectChipState(activeZone);
+
+  // Strip `data-enter` once the slide animation finishes so the attribute
+  // doesn't linger on the DOM as stale state.
+  ZONES.forEach((z) => {
+    const el = trackEls[z];
+    if (!el) return;
+    el.addEventListener('animationend', () => {
+      if (el.dataset.active === 'true') delete el.dataset.enter;
+    });
+  });
+
+  // Wire chips. Click = swap lane WITH scroll-to-first-card so it really
+  // feels like "diving into" that tributary.
+  document.querySelectorAll('.branch-chip').forEach((chip) => {
+    const zone = chip.dataset.branch;
+    chip.addEventListener('click', () => setActiveZone(zone, { scrollToTop: true }));
+  });
+
+  // --- Keyboard navigation ---
+  //   ← / A : previous lane (animated)
+  //   → / D : next lane (animated)
+  //   ↑ / W : previous card in active lane (or hero if at top)
+  //   ↓ / S : next card in active lane (or footer if at bottom)
+  //   Space : open the centered card's primary link
+
+  const getActiveLaneSections = () => {
+    const el = trackEls[activeZone];
+    if (!el) return [];
+    return Array.from(el.querySelectorAll('.project-section'));
+  };
+
+  const currentLaneSectionIndex = (sections) => {
+    const anchor = window.innerHeight * 0.4;
     let best = 0;
     let bestDist = Infinity;
-    sections.forEach((el, i) => {
-      const top = el.getBoundingClientRect().top;
-      const d = Math.abs(top - anchor);
+    sections.forEach((sec, i) => {
+      const r = sec.getBoundingClientRect();
+      const cy = (r.top + r.bottom) * 0.5;
+      const d = Math.abs(cy - anchor);
       if (d < bestDist) { bestDist = d; best = i; }
     });
     return best;
   };
 
-  const jumpSection = (dir) => {
-    const sections = getOrderedSections();
-    if (!sections.length) return;
-    const cur = currentSectionIndex(sections);
-    const next = Math.max(0, Math.min(sections.length - 1, cur + dir));
-    // If already at the end and user presses down again, scroll to footer.
-    if (cur === next && dir > 0) {
-      const footer = document.querySelector('footer, .site-footer');
-      if (footer && smooth.scrollTo) {
-        smooth.scrollTo(footer, { duration: 0.6 });
-      } else {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      }
+  const jumpInLane = (dir) => {
+    const sections = getActiveLaneSections();
+    if (!sections.length) {
+      // Empty lane — fall back to hero/footer based on direction.
+      const t = dir < 0
+        ? document.getElementById('hero')
+        : document.querySelector('footer, .site-footer');
+      if (t && smooth.scrollTo) smooth.scrollTo(t, { duration: 0.6 });
       return;
     }
-    // If already at the start and user presses up again, scroll to hero.
-    if (cur === next && dir < 0) {
+    const cur = currentLaneSectionIndex(sections);
+    const next = cur + dir;
+    if (next < 0) {
       const hero = document.getElementById('hero');
       if (hero && smooth.scrollTo) smooth.scrollTo(hero, { duration: 0.6 });
       return;
     }
-    const target = sections[next];
-    // Also pick up the active tributary from the target card's parent so
-    // the WebGL camera follows along on keyboard nav.
-    const trackZone = target.closest('.branch-track')?.dataset.branch;
-    if (trackZone) selectBranch(trackZone);
-    if (smooth.scrollTo) {
-      smooth.scrollTo(target, { offset: -80, duration: 0.55 });
-    } else {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (next >= sections.length) {
+      const footer = document.querySelector('footer, .site-footer');
+      if (footer && smooth.scrollTo) smooth.scrollTo(footer, { duration: 0.6 });
+      return;
     }
+    const target = sections[next];
+    if (smooth.scrollTo) smooth.scrollTo(target, { offset: -80, duration: 0.55 });
+    else target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   let lastKeyNavAt = 0;
   window.addEventListener('keydown', (e) => {
     if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
-    const current = ZONES.reduce((best, z) =>
-      weights[z] > (weights[best] ?? 0) ? z : best, 'webdesign');
-    const idx = ZONES.indexOf(current);
     const k = e.key.toLowerCase();
 
-    // Lateral tributary switching — only on fresh key, not autorepeat,
-    // otherwise holding ← would rifle past marketing instantly.
     if (k === 'arrowleft' || k === 'a') {
       if (e.repeat) { e.preventDefault(); return; }
       e.preventDefault();
-      selectBranch(ZONES[Math.max(0, idx - 1)]);
+      const idx = ZONES.indexOf(activeZone);
+      if (idx > 0) setActiveZone(ZONES[idx - 1], { scrollToTop: true });
       return;
     }
     if (k === 'arrowright' || k === 'd') {
       if (e.repeat) { e.preventDefault(); return; }
       e.preventDefault();
-      selectBranch(ZONES[Math.min(ZONES.length - 1, idx + 1)]);
+      const idx = ZONES.indexOf(activeZone);
+      if (idx < ZONES.length - 1) setActiveZone(ZONES[idx + 1], { scrollToTop: true });
       return;
     }
-
-    // Vertical scroll — tap = one section, hold = rapid throttled descent.
     if (k === 'arrowdown' || k === 's') {
       e.preventDefault();
       const now = performance.now();
       if (e.repeat && now - lastKeyNavAt < 120) return;
       lastKeyNavAt = now;
-      jumpSection(+1);
+      jumpInLane(+1);
       return;
     }
     if (k === 'arrowup' || k === 'w') {
@@ -326,14 +309,9 @@ async function bootstrap() {
       const now = performance.now();
       if (e.repeat && now - lastKeyNavAt < 120) return;
       lastKeyNavAt = now;
-      jumpSection(-1);
+      jumpInLane(-1);
       return;
     }
-
-    // Space = open the currently-active project's primary URL.
-    // (Browser default would be page-down; we'd rather make Space useful.)
-    // But if focus is on a real button/link we MUST let Space activate it
-    // — hijacking native keyboard activation would break accessibility.
     if (k === ' ' || e.code === 'Space') {
       const t = e.target;
       if (t && (t.tagName === 'BUTTON' || t.tagName === 'A' ||
@@ -342,40 +320,20 @@ async function bootstrap() {
       }
       if (e.repeat) { e.preventDefault(); return; }
       e.preventDefault();
-      const sections = getOrderedSections();
+      const sections = getActiveLaneSections();
       if (!sections.length) return;
-      const cur = sections[currentSectionIndex(sections)];
+      const cur = sections[currentLaneSectionIndex(sections)];
       const link = cur?.querySelector('.project-links a[href]');
-      if (link && link.href) {
-        const u = link.href;
+      if (link?.href) {
         try {
-          const parsed = new URL(u);
-          if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
-            window.open(parsed.href, '_blank', 'noopener,noreferrer');
+          const u = new URL(link.href);
+          if (u.protocol === 'https:' || u.protocol === 'http:') {
+            window.open(u.href, '_blank', 'noopener,noreferrer');
           }
         } catch { /* ignore malformed */ }
       }
     }
   });
-
-  // Smoothed weights per zone. Initialised to "webdesign dominant" so
-  // there's a sensible default before the pointer moves.
-  const weights = { marketing: 0, webdesign: 1, games: 0 };
-
-  const computeRawWeights = (frac) => {
-    const raw = {};
-    let sum = 0;
-    ZONES.forEach((z) => {
-      const d = Math.abs(frac - ZONE_CENTERS[z]);
-      const w = Math.max(0, 1 - d / FALLOFF);
-      // Smoothstep for a softer falloff near the zone edge.
-      raw[z] = w * w * (3 - 2 * w);
-      sum += raw[z];
-    });
-    if (sum > 0) ZONES.forEach((z) => (raw[z] /= sum));
-    else raw.webdesign = 1;
-    return raw;
-  };
 
   ScrollTrigger.create({
     trigger: '#app',
@@ -405,60 +363,14 @@ async function bootstrap() {
     biomes.update(time, smooth.progress, scene.mouse);
     projectNodes.update(time, dt);
 
-    // Continuous weighted blend between the three zones. Damp the
-    // smoothed `weights` toward the raw (normalised) zone weights so
-    // transitions between panels feel fluid instead of snapping.
-    const raw = computeRawWeights(pointerFrac);
-    let dominant = 'webdesign';
-    let maxW = 0;
-    ZONES.forEach((z) => {
-      // 0.18 → ~55ms half-life at 60fps. Faster than 0.10's ~120ms so
-      // the crossfade feels immediate instead of molasses, but still
-      // damped enough that wiggling the mouse doesn't produce flicker.
-      weights[z] = damp(weights[z], raw[z], 0.18, dt);
-      if (weights[z] > maxW) { maxW = weights[z]; dominant = z; }
-    });
+    // Camera lane follows the active tributary's lane-X, damped so the
+    // pan between Marketing (-14) → Webdesign (0) → Games (+14) reads as
+    // a smooth slide rather than a cut.
+    const laneXTarget = branchLanes[activeZone] ?? 0;
+    scene.cameraLaneX = damp(scene.cameraLaneX, laneXTarget, 0.14, dt);
+    scene.cameraLaneY = damp(scene.cameraLaneY, 0, 0.14, dt);
 
-    // Per-frame DOM: opacity + blur + saturate driven by smoothed weight.
-    // Tightened — lower max blur (7 vs 12px) so the inactive track stays
-    // legible-as-silhouette instead of smearing, and a harder saturate
-    // contrast so the active card visually pops.
-    ZONES.forEach((z) => {
-      const el = trackEls[z];
-      if (!el) return;
-      const w = weights[z];
-      el.style.opacity = (0.02 + w * 0.98).toFixed(3);
-      el.style.filter = `blur(${((1 - w) * 7).toFixed(2)}px) saturate(${(0.2 + w * 0.8).toFixed(2)})`;
-      // Widen the pointer-events threshold: the dominant track gets
-      // clicks even if its weight hasn't fully cranked to 1 yet during
-      // a crossfade — feels responsive instead of "clicks ignored".
-      el.style.pointerEvents = (z === dominant || w > 0.4) ? 'auto' : 'none';
-      el.dataset.active = (z === dominant) ? 'true' : 'false';
-    });
-
-    // Camera rides a weighted sample of each branch's CatmullRomCurve3.
-    // This is what physically sends the camera down a different neural
-    // path per zone — marketing S-sweeps, webdesign spirals up/down,
-    // games zig-zags — rather than just sliding laterally.
-    const curves = projectNodes.curves || {};
-    const progress = Math.max(0, Math.min(0.98, scene.scroll ?? 0));
-    let tx = 0, ty = 0, wSum = 0;
-    ZONES.forEach((z) => {
-      const c = curves[z];
-      if (!c) return;
-      const pt = c.getPoint(progress);
-      tx += pt.x * weights[z];
-      ty += pt.y * weights[z];
-      wSum += weights[z];
-    });
-    if (wSum > 0) { tx /= wSum; ty /= wSum; }
-    else { tx = branchLanes[dominant]; ty = 0; }
-
-    // Camera damp 0.14 — snappier pan between lanes, still smoothed.
-    scene.cameraLaneX = damp(scene.cameraLaneX, tx, 0.14, dt);
-    scene.cameraLaneY = damp(scene.cameraLaneY, ty * 0.4, 0.14, dt);
-
-    projectNodes.setActiveCategory(dominant);
+    projectNodes.setActiveCategory(activeZone);
 
     // Colour ramp — hero stays monochrome (progress 0), colour ramps in
     // as the camera descends. Starts engaging around 4% scroll, fully

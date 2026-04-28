@@ -2,7 +2,7 @@
 // skeleton height so there's zero layout shift on hydration.
 
 const USERNAME = 'nixocode';
-const CACHE_KEY = 'nixocode-repos-v3';
+const CACHE_KEY = 'nixocode-repos-v4';
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 const ASSET = (p) => `${import.meta.env.BASE_URL}${p}`;
 
@@ -36,22 +36,23 @@ export const CATEGORIES = [
 
 export const knownProjects = [
   // --- Content & Marketing ---
-  { name: 'Content-marketing', category: 'marketing', title: 'Content & Marketing', categoryBadge: 'Content Creation & Social Media', techStack: ['Instagram', 'Photography', 'Production'], description: 'End-to-end social content — planning, capture, production, analytics. 2× follower and engagement growth, measurable sales impact.', live_url: 'https://nixocode.github.io/Content-marketing/', image: imageFor('content-marketing') },
+  { name: 'Content-marketing', category: 'marketing', title: 'Content & Marketing', categoryBadge: 'Content Creation & Social Media', techStack: ['Instagram', 'Photography', 'Production'], description: 'End-to-end social content — planning, capture, production, analytics. 2× follower and engagement growth, measurable sales impact.', live_url: 'https://nixocode.github.io/Content-marketing/', html_url: 'https://github.com/nixocode/Content-marketing', image: imageFor('content-marketing') },
 
   // --- Game Design ---
-  { name: 'global-strike-game', category: 'games', title: 'Global Strike — Nuclear Strategy', categoryBadge: 'Interactive Simulations', techStack: ['Three.js', 'HTML', 'CSS'], description: 'A visually immersive browser-based nuclear strategy game simulating DEFCON protocols and global conflict scenarios.', live_url: 'https://nixocode.github.io/global-strike-game/', image: imageFor('global-strike-game') },
+  { name: 'global-strike-game', category: 'games', title: 'Global Strike — Nuclear Strategy', categoryBadge: 'Interactive Simulations', techStack: ['Three.js', 'HTML', 'CSS'], description: 'A visually immersive browser-based nuclear strategy game simulating DEFCON protocols and global conflict scenarios.', live_url: 'https://nixocode.github.io/global-strike-game/', html_url: 'https://github.com/nixocode/global-strike-game', image: imageFor('global-strike-game') },
   { name: 'global-conflict-tracker', category: 'games', title: 'Global Conflict Tracker', categoryBadge: 'Geopolitical Simulation', techStack: ['D3.js', 'JavaScript', 'CSS'], description: 'An interactive, real-time 3D globe visualizing active geopolitical conflicts and regional tensions — work in progress.' },
 
   // --- Web, Apps & AI (AI + safety platforms live here) ---
-  { name: 'Tailor', category: 'webdesign', title: 'Tailor', categoryBadge: 'Enterprise & Product Design', techStack: ['HTML', 'CSS', 'JavaScript'], description: 'A modern web design agency combining AI efficiency with human craftsmanship for premium custom websites.', live_url: 'https://nixocode.github.io/Tailor/', image: imageFor('tailor') },
-  { name: 'RE-GROUND', category: 'webdesign', title: 'RE:Ground', categoryBadge: 'Brand & Sustainability', techStack: ['HTML', 'CSS', 'JavaScript'], description: 'A circular beauty brand concept that upcycles coffee waste from partner cafés into premium, sustainable skincare products.', live_url: 'https://nixocode.github.io/RE-GROUND/', image: imageFor('re-ground') },
-  { name: 'la-zona-segura', category: 'webdesign', title: 'La Zona Segura', categoryBadge: 'AI Safety Platform', techStack: ['Jekyll', 'HTML', 'CSS'], description: 'An industrial safety platform and incident management app — AI-assisted risk analysis for construction sites.', live_url: 'https://lazonaseguralzs.github.io/lazonasegura/', image: imageFor('la-zona-segura') },
+  { name: 'Ai2B', category: 'webdesign', title: 'Ai2B', categoryBadge: 'Custom AI Studio', techStack: ['Next.js', 'AI', 'Vercel'], description: 'Custom AI software for real businesses — bespoke agents and end-to-end systems forged to each company\'s stack, no templates, no fluff.', live_url: 'https://ai2-b.vercel.app', html_url: 'https://github.com/nixocode/Ai2B', image: imageFor('ai2b') },
+  { name: 'Tailor', category: 'webdesign', title: 'Tailor', categoryBadge: 'Enterprise & Product Design', techStack: ['HTML', 'CSS', 'JavaScript'], description: 'A modern web design agency combining AI efficiency with human craftsmanship for premium custom websites.', live_url: 'https://nixocode.github.io/Tailor/', html_url: 'https://github.com/nixocode/Tailor', image: imageFor('tailor') },
+  { name: 'RE-GROUND', category: 'webdesign', title: 'RE:Ground', categoryBadge: 'Brand & Sustainability', techStack: ['HTML', 'CSS', 'JavaScript'], description: 'A circular beauty brand concept that upcycles coffee waste from partner cafés into premium, sustainable skincare products.', live_url: 'https://nixocode.github.io/RE-GROUND/', html_url: 'https://github.com/nixocode/RE-GROUND', image: imageFor('re-ground') },
+  { name: 'la-zona-segura', category: 'webdesign', title: 'La Zona Segura', categoryBadge: 'AI Safety Platform', techStack: ['Jekyll', 'HTML', 'CSS'], description: 'An industrial safety platform and incident management app — AI-assisted risk analysis for construction sites.', live_url: 'https://lazonaseguralzs.github.io/lazonasegura/', html_url: 'https://github.com/nixocode/LZS', image: imageFor('la-zona-segura') },
 
   // --- Studies & Coursework ---
-  { name: 'Class_Project_Sales_Plan', category: 'others', title: 'Sales Plan Playground', categoryBadge: 'Academic Study', techStack: ['HTML', 'CSS', 'JavaScript'], description: 'An interactive educational framework teaching a systematic 5-step approach to sales planning — from constraint analysis through market penetration strategy.', live_url: 'https://nixocode.github.io/Class_Project_Sales_Plan/', image: imageFor('class_project_sales_plan') },
-  { name: 'pool-guide', category: 'others', title: '42 Pool Prep Guide', categoryBadge: 'Technical Study', techStack: ['C', 'Systems', 'Algorithms'], description: 'Peer-tested C pool prep — algorithmic drills, Norme conformance and systems primitives built during on-site 42 training.', image: imageFor('pool-guide') },
-  { name: 'fresc', category: 'others', title: 'Fresc', categoryBadge: 'Coursework', techStack: ['HTML', 'CSS', 'Type'], description: 'Coursework microsite exploring typographic restraint and editorial pacing — constraint-driven design study.', image: imageFor('fresc') },
-  { name: 'law-civil-law', category: 'others', title: 'Civil Law Explainer', categoryBadge: 'Legal Study', techStack: ['HTML', 'CSS', 'Research'], description: 'Visual explainers compiled for a civil law course — dense statutory material distilled into scannable screens.', image: imageFor('law-civil-law') },
+  { name: 'Class_Project_Sales_Plan', category: 'others', title: 'Sales Plan Playground', categoryBadge: 'Academic Study', techStack: ['HTML', 'CSS', 'JavaScript'], description: 'An interactive educational framework teaching a systematic 5-step approach to sales planning — from constraint analysis through market penetration strategy.', live_url: 'https://nixocode.github.io/Class_Project_Sales_Plan/', html_url: 'https://github.com/nixocode/Class_Project_Sales_Plan', image: imageFor('class_project_sales_plan') },
+  { name: 'pool-guide', category: 'others', title: '42 Pool Prep Guide', categoryBadge: 'Technical Study', techStack: ['C', 'Systems', 'Algorithms'], description: 'Peer-tested C pool prep — algorithmic drills, Norme conformance and systems primitives built during on-site 42 training.', live_url: 'https://nixocode.github.io/C-pool-Prep/', html_url: 'https://github.com/nixocode/C-pool-Prep', image: imageFor('pool-guide') },
+  { name: 'fresc', category: 'others', title: 'Fresc', categoryBadge: 'Coursework', techStack: ['HTML', 'CSS', 'Type'], description: 'Coursework microsite exploring typographic restraint and editorial pacing — constraint-driven design study.', live_url: 'https://nixocode.github.io/Fresc/', html_url: 'https://github.com/nixocode/Fresc', image: imageFor('fresc') },
+  { name: 'law-civil-law', category: 'others', title: 'Civil Law Explainer', categoryBadge: 'Legal Study', techStack: ['HTML', 'CSS', 'Research'], description: 'Visual explainers compiled for a civil law course — dense statutory material distilled into scannable screens.', live_url: 'https://nixocode.github.io/Law-Civil-Web/', html_url: 'https://github.com/nixocode/Law-Civil-Web', image: imageFor('law-civil-law') },
 ];
 
 function readCache() {
@@ -83,11 +84,22 @@ export async function loadProjects() {
     if (!res.ok) throw new Error('GitHub API failed');
     const data = await res.json();
 
+    // Case-insensitive name match + html_url match keeps the curated
+    // knownProjects from being duplicated as auto-fetched extras when the
+    // hardcoded `name` differs in case from the actual GitHub repo
+    // (pool-guide → C-pool-Prep, fresc → Fresc, la-zona-segura → LZS, etc).
+    const knownNames = new Set(
+      knownProjects.map(p => (p.name || '').toLowerCase())
+    );
+    const knownUrls = new Set(
+      knownProjects.map(p => p.html_url).filter(Boolean)
+    );
     const extras = data
       .filter(r =>
         !r.fork &&
         !r.name.toLowerCase().includes('portfolio') &&
-        !knownProjects.some(kp => kp.name === r.name)
+        !knownNames.has(r.name.toLowerCase()) &&
+        !knownUrls.has(r.html_url)
       )
       .map(r => {
         // Build a richer tech stack: language + inferred tags from topics.
@@ -229,18 +241,27 @@ export function renderProjects(projects, container) {
     (groups[c] ||= []).push(p);
   });
 
-  // --- Pointer-gated stack: 3 overlapping vertical tracks ---
+  // --- PSP / XMB tributary stack: 3 parallel rails ---
+  // Render order is left → center → right so DOM matches visual order.
+  // `data-side` is the resting position of inactive rails relative to
+  // the currently-active one; JS recomputes it on every lane switch.
   const stack = document.createElement('div');
   stack.className = 'branch-stack';
-  ['marketing', 'games', 'webdesign'].forEach((catId) => {
+  const RAILS = ['marketing', 'webdesign', 'games'];
+  const DEFAULT_ACTIVE = 'webdesign';
+  RAILS.forEach((catId) => {
     const cat = CATEGORIES.find(c => c.id === catId);
     const list = groups[catId] || [];
     const track = document.createElement('div');
     track.className = 'branch-track';
     track.dataset.branch = catId;
-    // Default active = middle (games) so the page has a visible state
-    // before the pointer ever moves.
-    track.dataset.active = catId === 'games' ? 'true' : 'false';
+    track.dataset.active = catId === DEFAULT_ACTIVE ? 'true' : 'false';
+    // Resting side of each inactive rail vs the default active (webdesign):
+    //   marketing → left, games → right.
+    if (catId !== DEFAULT_ACTIVE) {
+      const order = RAILS.indexOf(catId) - RAILS.indexOf(DEFAULT_ACTIVE);
+      track.dataset.side = order < 0 ? 'left' : 'right';
+    }
     track.appendChild(buildHeader(cat));
     list.forEach((repo, li) => {
       track.appendChild(buildSection(repo, ordered.indexOf(repo), li));

@@ -733,44 +733,109 @@ body.cursor-node .cursor-dot {
 }
 
 /* =========================================================================
-   Pointer-branching stack
+   PSP / XMB tributary stack
    ------------------------------------------------------------------------
-   The 3 main branches share one vertical region via CSS grid stacking.
-   Pointer X picks which is active; the inactive two fade, blur and
-   disable their pointer events so scroll passes straight through. This
-   is what makes "move your cursor, change your neural path" work.
+   The 3 main branches are 3 PARALLEL RAILS occupying the same vertical
+   region. Only the active rail is in document flow and drives the page's
+   scroll height; the inactive rails are absolutely positioned at the same
+   top and slide off to ±X with depth, blur and a slight tilt (XMB feel).
+   Hitting ← / → re-promotes another rail into flow and slides the new
+   one in from its side; ↑ / ↓ just scrolls the active rail's cards.
    ========================================================================= */
 .branch-stack {
   position: relative;
-  display: grid;
+  /* Rails coexist visually; only the active one occupies real height. */
 }
 .branch-stack > .branch-track {
-  grid-column: 1;
-  grid-row: 1;
+  /* All rails share the same top — the inactive ones are pulled out of
+     flow so the page height tracks the active rail only. */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  transform-origin: 50% 35%;
   transition:
-    opacity 0.55s var(--ease-smooth),
-    filter  0.55s var(--ease-smooth),
-    transform 0.55s var(--ease-smooth);
-  will-change: opacity, filter, transform;
+    opacity 0.55s var(--ease-expo),
+    filter  0.55s var(--ease-expo),
+    transform 0.65s var(--ease-expo);
+  will-change: transform, opacity, filter;
+  /* Each track keeps its own horizontal "side" via attribute selectors
+     (set further down). The transform below is the resting state for
+     the inactive rails; JS overrides during animation. */
 }
 .branch-stack > .branch-track[data-active="true"] {
+  position: relative;       /* drives the parent's height */
   opacity: 1;
   filter: none;
   pointer-events: auto;
-  transform: none;
-  z-index: 2;
+  transform: translate3d(0, 0, 0) scale(1);
+  z-index: 3;
 }
-.branch-stack > .branch-track[data-active="false"] {
-  opacity: 0.045;
-  filter: blur(16px) saturate(0.35);
+.branch-stack > .branch-track[data-side="left"][data-active="false"] {
+  opacity: 0.18;
+  filter: blur(6px) saturate(0.4);
+  transform: translate3d(-46vw, 0, -120px) scale(0.78) rotateY(14deg);
   pointer-events: none;
-  transform: scale(0.996);
-  z-index: 1;
 }
+.branch-stack > .branch-track[data-side="right"][data-active="false"] {
+  opacity: 0.18;
+  filter: blur(6px) saturate(0.4);
+  transform: translate3d(46vw, 0, -120px) scale(0.78) rotateY(-14deg);
+  pointer-events: none;
+}
+.branch-stack > .branch-track[data-side="hidden"][data-active="false"] {
+  opacity: 0;
+  filter: blur(14px) saturate(0.2);
+  transform: translate3d(0, 8vh, -260px) scale(0.6);
+  pointer-events: none;
+}
+/* Lane switch: the incoming track gets a brief settle bounce. */
+.branch-stack > .branch-track[data-active="true"][data-enter="left"] {
+  animation: laneEnterLeft 0.55s var(--ease-expo);
+}
+.branch-stack > .branch-track[data-active="true"][data-enter="right"] {
+  animation: laneEnterRight 0.55s var(--ease-expo);
+}
+@keyframes laneEnterLeft {
+  0%   { transform: translate3d(-12vw, 0, -80px) scale(0.94); opacity: 0.4; filter: blur(4px); }
+  60%  { transform: translate3d(1vw, 0, 0) scale(1.01); opacity: 1; filter: blur(0); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes laneEnterRight {
+  0%   { transform: translate3d(12vw, 0, -80px) scale(0.94); opacity: 0.4; filter: blur(4px); }
+  60%  { transform: translate3d(-1vw, 0, 0) scale(1.01); opacity: 1; filter: blur(0); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* Lane indicator rail glow on the side each tributary lives — subtle but
+   it keeps the PSP "lanes are physically there" reading. */
+.branch-stack::before,
+.branch-stack::after {
+  content: '';
+  position: absolute;
+  top: 4rem; bottom: 4rem;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(232, 234, 237, 0.12), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+.branch-stack::before { left: 8vw; }
+.branch-stack::after  { right: 8vw; }
+
 .branch-others {
   margin-top: 6rem;
   padding-top: 4rem;
   border-top: 1px solid rgba(232, 234, 237, 0.05);
+}
+
+/* On reduced motion, drop the 3D transforms — just fade. */
+@media (prefers-reduced-motion: reduce) {
+  .branch-stack > .branch-track,
+  .branch-stack > .branch-track[data-side] {
+    transform: none !important;
+    animation: none !important;
+  }
 }
 
 /* =========================================================================
