@@ -23,6 +23,14 @@ export class Scene {
     this.cameraZ = 6;
     this.reducedMotion = prefersReducedMotion();
     this.mobile = isTouch() || this.size.w < 768;
+    // Low-end heuristic — phones with ≤4 cores or ≤3GB memory can't
+    // afford the bloom fullscreen pass without dropping frames. Also
+    // off when the user prefers reduced motion (one less expensive
+    // post-process pass means a snappier first paint on every device
+    // that's already asking us to ease up).
+    const cores = (navigator.hardwareConcurrency || 8);
+    const mem   = (navigator.deviceMemory || 8);
+    this.lowEnd = this.reducedMotion || cores < 4 || mem < 3;
 
     this._initRenderer();
     this._initScene();
@@ -83,17 +91,20 @@ export class Scene {
 
     this.composer.addPass(new RenderPass(this.scene, this.camera));
 
-    // Bloom — subtle, monochrome.
-    const bloom = new UnrealBloomPass(
-      new THREE.Vector2(this.size.w, this.size.h),
-      this.mobile ? 0.15 : 0.22, // strength
-      0.75,                       // radius
-      0.92                        // threshold
-    );
-    this.composer.addPass(bloom);
+    // Bloom is the most expensive pass — skip it entirely on low-end
+    // devices. The visual hit is small (the trunks still glow via
+    // additive blending); the FPS gain on phones is real.
+    if (!this.lowEnd) {
+      const bloom = new UnrealBloomPass(
+        new THREE.Vector2(this.size.w, this.size.h),
+        this.mobile ? 0.15 : 0.22, // strength
+        0.75,                       // radius
+        0.92                        // threshold
+      );
+      this.composer.addPass(bloom);
+      this.bloom = bloom;
+    }
     this.composer.addPass(new OutputPass());
-
-    this.bloom = bloom;
   }
 
   _bindEvents() {

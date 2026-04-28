@@ -1201,16 +1201,60 @@ body.cursor-node .cursor-dot {
   .project-details { padding: 2rem 1.5rem; max-width: 100%; }
   .project-right .project-details,
   .project-left  .project-details { margin: 0 auto; }
+  /* Force the per-tributary card pin (left/right/center) off on phones —
+     the cards should fill the screen, not hug a side. */
+  .branch-track[data-branch="marketing"] .project-details,
+  .branch-track[data-branch="webdesign"] .project-details,
+  .branch-track[data-branch="games"]     .project-details {
+    margin-left: auto;
+    margin-right: auto;
+  }
   .hero-actions { gap: 0.5rem; }
   .hero-btn { padding: 0.75rem 1.15rem; font-size: 0.82rem; }
   .top-nav { padding: 1rem 1.25rem; font-size: 0.68rem; }
   .nav-status span:last-child { display: none; }
   .project-links { flex-direction: column; align-items: stretch; }
-  .project-links a { justify-content: center; }
+  .project-links a { justify-content: center; min-height: 44px; }
   .info-panel.active { padding: 1.5rem 1.35rem; }
-  .panel-close { top: 0.75rem; right: 0.75rem; width: 30px; height: 30px; }
+  .panel-close { top: 0.75rem; right: 0.75rem; width: 34px; height: 34px; }
   .scroll-cue { margin-top: 2.5rem; }
   .section-divider { padding: 2.5rem 1.5rem 1rem; gap: 1rem; font-size: 0.66rem; }
+
+  /* --- PSP rails on mobile -------------------------------------------
+     The desktop XMB stack hides inactive rails behind 3D transforms +
+     blur. Phones don't have the screen real estate or GPU headroom for
+     that, so on ≤900px we collapse to a single full-width column for
+     the active rail and HARD-HIDE the inactive ones. Lane switching is
+     still the chip picker (and the swipe gesture wired in main.js).
+     ------------------------------------------------------------------- */
+  .branch-stack > .branch-track[data-active="false"],
+  .branch-stack > .branch-track[data-side="left"][data-active="false"],
+  .branch-stack > .branch-track[data-side="right"][data-active="false"],
+  .branch-stack > .branch-track[data-side="hidden"][data-active="false"] {
+    /* display: none would skip animation entirely; visibility hidden +
+       zero-height keeps the slot collapsed but lets the lane re-appear
+       cleanly when promoted to active. */
+    display: none;
+  }
+  .branch-stack > .branch-track[data-active="true"] {
+    position: relative;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1;
+    animation: none !important;
+  }
+  /* Drop the side glow rails on phones — they read as visual noise at
+     this width because there are no inactive lanes alongside them. */
+  .branch-stack::before,
+  .branch-stack::after { display: none; }
+
+  /* Beefier chip touch target — Apple HIG says 44pt minimum. */
+  .branch-chip {
+    min-height: 44px;
+    padding: 0.7rem 1rem 0.7rem 0.85rem;
+  }
+  .branch-picker { width: 100%; max-width: 540px; }
+  .branch-picker-row { gap: 0.5rem; }
 
   .footer-inner {
     grid-template-columns: 1fr;

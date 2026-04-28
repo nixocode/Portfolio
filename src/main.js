@@ -224,6 +224,44 @@ async function bootstrap() {
     chip.addEventListener('click', () => setActiveZone(zone, { scrollToTop: true }));
   });
 
+  // --- Touch swipe lane switching (mobile) ----------------------------
+  // Only fires on a clear horizontal flick: dx > 60px AND |dx| > 1.4×|dy|.
+  // Vertical scrolls and tap-scrolls are ignored, so the page still
+  // scrolls naturally with one finger. Single-finger only — pinches
+  // and multi-touch gestures pass through.
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartTime = 0;
+  let touchTracking = false;
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) { touchTracking = false; return; }
+    const t = e.touches[0];
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    touchStartTime = performance.now();
+    touchTracking = true;
+  }, { passive: true });
+  window.addEventListener('touchend', (e) => {
+    if (!touchTracking) return;
+    touchTracking = false;
+    const t = e.changedTouches[0];
+    if (!t) return;
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+    const dt = performance.now() - touchStartTime;
+    // Reject slow drags (probably text-select), tiny moves, or
+    // mostly-vertical motion (page scroll).
+    if (dt > 800) return;
+    if (Math.abs(dx) < 60) return;
+    if (Math.abs(dx) < Math.abs(dy) * 1.4) return;
+    const idx = ZONES.indexOf(activeZone);
+    if (dx < 0 && idx < ZONES.length - 1) {
+      setActiveZone(ZONES[idx + 1], { scrollToTop: true });
+    } else if (dx > 0 && idx > 0) {
+      setActiveZone(ZONES[idx - 1], { scrollToTop: true });
+    }
+  }, { passive: true });
+
   // --- Keyboard navigation ---
   //   ← / A : previous lane (animated)
   //   → / D : next lane (animated)
