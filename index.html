@@ -3,40 +3,37 @@
 
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/Portfolio/logo.png" />
+  <link rel="apple-touch-icon" href="/Portfolio/logo.png" />
   <link rel="icon" type="image/svg+xml" href="/Portfolio/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description"
     content="Nicolas Pertierra Porrua — Multilingual digital marketer, content creator and developer based in Barcelona, blending creative craft with AI-driven workflows." />
-  <meta name="theme-color" content="#05070d" />
+  <meta name="theme-color" content="#07080a" />
   <meta name="author" content="Nicolas Pertierra Porrua" />
-  <link rel="canonical" href="https://nixocode.github.io/nicolaspertierraportfolio/" />
+  <link rel="canonical" href="https://nixocode.github.io/Portfolio/" />
 
   <!-- Open Graph / social -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://nixocode.github.io/nicolaspertierraportfolio/" />
-  <meta property="og:title" content="Nicolas Pertierra Porrua // Neural Portfolio" />
+  <meta property="og:url" content="https://nixocode.github.io/Portfolio/" />
+  <meta property="og:title" content="Nicolas Pertierra — Creative Developer Portfolio" />
   <meta property="og:description"
     content="Multilingual digital marketer, content creator and developer based in Barcelona. Creative craft meets AI-driven workflows." />
-  <meta property="og:image" content="https://nixocode.github.io/nicolaspertierraportfolio/og-image.jpg" />
+  <meta property="og:image" content="https://nixocode.github.io/Portfolio/og-image.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:locale" content="en_US" />
 
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Nicolas Pertierra Porrua // Neural Portfolio" />
+  <meta name="twitter:title" content="Nicolas Pertierra — Creative Developer Portfolio" />
   <meta name="twitter:description"
     content="Multilingual digital marketer, content creator and developer based in Barcelona. Creative craft meets AI-driven workflows." />
-  <meta name="twitter:image" content="https://nixocode.github.io/nicolaspertierraportfolio/og-image.jpg" />
+  <meta name="twitter:image" content="https://nixocode.github.io/Portfolio/og-image.jpg" />
 
-  <title>Nicolas Pertierra Porrua // Neural Portfolio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
-    rel="stylesheet">
-  <script type="module" crossorigin src="/Portfolio/assets/index-COnqH53n.js"></script>
-  <link rel="stylesheet" crossorigin href="/Portfolio/assets/index-D6Ug3CKZ.css">
+  <title>Nicolas Pertierra — Creative Developer Portfolio</title>
+  <script type="module" crossorigin src="/Portfolio/assets/index-COXI9Bsl.js"></script>
+  <link rel="stylesheet" crossorigin href="/Portfolio/assets/index-CBHLcDR9.css">
 </head>
 
 <body>
@@ -61,19 +58,38 @@
 
   <!-- Fixed nav sits outside #app so it never participates in scroll transforms -->
   <header class="top-nav">
-    <div class="nav-brand">NPP<span class="nav-brand-accent">//</span></div>
-    <div class="nav-status">
-      <span class="status-dot" aria-hidden="true"></span>
-      <span>Available for work — 2026</span>
-    </div>
+    <nav class="nav-chips interactive" aria-label="Section navigation">
+      <button type="button" class="nav-chip" data-nav-branch="marketing" style="--chip-accent: #ff6a5e;">
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span>Content &amp; Marketing</span>
+      </button>
+      <button type="button" class="nav-chip" data-nav-branch="webdesign" style="--chip-accent: #5fd896;">
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span>Web, Apps &amp; AI</span>
+      </button>
+      <button type="button" class="nav-chip" data-nav-branch="games" style="--chip-accent: #5aa8ff;">
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span>Game Design</span>
+      </button>
+      <button type="button" class="nav-chip" data-nav-branch="class" style="--chip-accent: #c89aff;">
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span>Learning</span>
+      </button>
+      <button type="button" class="nav-birdseye interactive" id="birdseye-toggle" title="Bird's-Eye View">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </button>
+    </nav>
   </header>
 
   <main id="app">
     <a id="main-content" tabindex="-1"></a>
     <section class="section hero" id="hero">
       <div class="hero-eyebrow interactive">Creative Developer · Barcelona</div>
-      <h1>Nicolas Pertierra Porrua</h1>
-      <p class="hero-subtitle">Multilingual digital marketer, content creator and developer — crafting brand stories and interactive experiences where creative instinct meets AI-driven workflows.</p>
+      <h1>Nico Pertierra</h1>
+      <p class="hero-subtitle">Creative developer blending brand storytelling, interactive experiences and AI-driven workflows — where design craft meets engineered precision.</p>
 
       <div class="hero-actions interactive">
         <button type="button" class="hero-btn" data-panel="about" aria-expanded="false" aria-controls="about-panel">
@@ -151,16 +167,20 @@
           </button>
           <div class="panel-label">// CAPABILITIES</div>
           <ul class="skills-list">
-            <li><strong>Frontend & Full-Stack:</strong> Scalable, responsive architectures with modern web
-              frameworks and WebGL.</li>
-            <li><strong>UI/UX & Interactive Design:</strong> Premium, user-centric experiences and cinematic
-              3D animation.</li>
-            <li><strong>AI Integration & Local LLMs:</strong> Artificial intelligence, workflow automation
-              and custom local models in production.</li>
+            <li><strong>Frontend · Learning Full-Stack:</strong> Strong foundation in responsive, interactive
+              web development — actively expanding into back-end technologies and full-stack architecture.</li>
+            <li><strong>UI/UX & Interactive Design:</strong> Premium, user-centric experiences with cinematic
+              3D animation and WebGL.</li>
+            <li><strong>AI Integration & Workflow Automation:</strong> Hands-on with AI tools, prompt
+              engineering, local LLMs and AI-assisted content production.</li>
+            <li><strong>Marketing &amp; Growth:</strong> Campaign strategy, SEO &amp; SEM, and CRM — the
+              commercial lens behind every creative project.</li>
+            <li><strong>Finance &amp; Business:</strong> Budgeting, financial analysis and commercial
+              strategy rooted in business administration training.</li>
             <li><strong>International Profile:</strong> Native speaker in three languages, fluent across
               cultures and markets.</li>
-            <li><strong>Agile & Dev Workflow:</strong> Modern version control, code review and agile team
-              environments.</li>
+            <li><strong>Agile & Dev Workflow:</strong> Modern version control, code review and collaborative
+              team environments.</li>
           </ul>
         </div>
 
@@ -197,8 +217,10 @@
           </button>
           <div class="panel-label">// COURSES & EDUCATION</div>
           <ul class="skills-list">
-            <li><strong>Digital Marketing & Business — Barcelona:</strong> Currently studying, focused on
-              international growth, brand strategy and tech-driven marketing.</li>
+            <li><strong>Business Administration &amp; Management — Barcelona:</strong> Currently studying,
+              focused on international growth, brand strategy and tech-driven marketing.</li>
+            <li><strong>Interactive Media — University of York:</strong> Studies in creative technology,
+              interactive systems and media production.</li>
             <li><strong>Creative Development & WebGL:</strong> Self-directed study in Three.js, shaders and
               interactive web experiences.</li>
             <li><strong>AI & Prompt Engineering:</strong> Practical training across LLM workflows, local model
@@ -211,26 +233,65 @@
         </div>
       </div>
 
-      <div class="scroll-cue" aria-hidden="true">
-        <span>Scroll to traverse the network</span>
-        <div class="scroll-cue-line"></div>
-      </div>
-    </section>
+      <nav class="branch-picker interactive" role="navigation" aria-label="Choose a neural tributary">
+        <div class="branch-picker-label">2026 projects</div>
+        <div class="branch-picker-row">
+          <button type="button" class="branch-chip" data-branch="marketing"
+            style="--chip-accent: #ff6a5e;">
+            <span class="chip-dot" aria-hidden="true"></span>
+            <span class="chip-label">Content & Marketing</span>
+            <svg class="chip-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="5,12 12,19 19,12"></polyline>
+            </svg>
+          </button>
+          <button type="button" class="branch-chip" data-branch="webdesign"
+            style="--chip-accent: #5fd896;">
+            <span class="chip-dot" aria-hidden="true"></span>
+            <span class="chip-label">Web, Apps &amp; AI</span>
+            <svg class="chip-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="5,12 12,19 19,12"></polyline>
+            </svg>
+          </button>
+          <button type="button" class="branch-chip" data-branch="games"
+            style="--chip-accent: #5aa8ff;">
+            <span class="chip-dot" aria-hidden="true"></span>
+            <span class="chip-label">Game Design</span>
+            <svg class="chip-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="5,12 12,19 19,12"></polyline>
+            </svg>
+          </button>
+          <button type="button" class="branch-chip" data-branch="class"
+            style="--chip-accent: #c89aff;">
+            <span class="chip-dot" aria-hidden="true"></span>
+            <span class="chip-label">Learning</span>
+            <svg class="chip-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="5,12 12,19 19,12"></polyline>
+            </svg>
+          </button>
+          <button type="button" class="birdseye-chip interactive" id="birdseye-toggle-hero">
+            Bird's-Eye
+          </button>
+        </div>
+        <div class="branch-picker-hint">Hover · ← → or A/D to branch · ↓ or S to descend</div>
+      </nav>
 
-    <!-- Visual transition between hero and first project -->
-    <div class="section-divider" aria-hidden="true">
-      <div class="divider-line"></div>
-      <div class="divider-label">// SELECTED WORK</div>
-      <div class="divider-line"></div>
-    </div>
+    </section>
 
     <div id="projects-container"></div>
 
     <footer class="site-footer" id="contact">
       <div class="footer-inner">
         <div class="footer-col footer-col-brand">
-          <div class="footer-brand">Nicolas Pertierra Porrua</div>
-          <div class="footer-tagline">Creative Developer &amp; Digital Marketer — Barcelona</div>
+          <div class="footer-brand">Nicolas Pertierra</div>
+          <div class="footer-tagline">Creative Developer — Barcelona</div>
           <button type="button" class="footer-contact-btn" data-contact-action>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -254,7 +315,7 @@
               </a>
             </li>
             <li>
-              <a href="https://www.linkedin.com/" target="_blank" rel="noopener" class="footer-link">
+              <a href="https://www.linkedin.com/in/nicolaspertierraporrua" target="_blank" rel="noopener" class="footer-link">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"></path>
@@ -278,10 +339,6 @@
             </li>
           </ul>
         </nav>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 Nicolas Pertierra Porrua</span>
-        <span class="footer-signal"><span class="status-dot" aria-hidden="true"></span>all signals live</span>
       </div>
     </footer>
   </main>
