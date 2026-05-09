@@ -32,7 +32,7 @@ export const CATEGORIES = [
   { id: 'marketing', label: 'Content & Marketing',  accent: '#ff6a5e', density: 'dense'  },
   { id: 'games',     label: 'Game Design',          accent: '#5aa8ff', density: 'sharp'  },
   { id: 'webdesign', label: 'Web, Apps & AI',       accent: '#5fd896', density: 'grid'   },
-  { id: 'others',    label: 'Studies & Coursework', accent: '#8a93a2', density: 'sparse' },
+  { id: 'class',     label: 'Learning', accent: '#c89aff', density: 'sparse' },
 ];
 
 export const knownProjects = [
@@ -50,10 +50,10 @@ export const knownProjects = [
   { name: 'la-zona-segura', category: 'webdesign', title: 'La Zona Segura', categoryBadge: 'AI Safety Platform', techStack: ['Jekyll', 'HTML', 'CSS'], description: 'An industrial safety platform and incident management app — AI-assisted risk analysis for construction sites.', live_url: 'https://lazonaseguralzs.github.io/lazonasegura/', html_url: 'https://github.com/nixocode/LZS', image: imageFor('la-zona-segura') },
 
   // --- Studies & Coursework ---
-  { name: 'Class_Project_Sales_Plan', category: 'others', title: 'Sales Plan Playground', categoryBadge: 'Academic Study', techStack: ['HTML', 'CSS', 'JavaScript'], description: 'An interactive educational framework teaching a systematic 5-step approach to sales planning — from constraint analysis through market penetration strategy.', live_url: 'https://nixocode.github.io/Class_Project_Sales_Plan/', html_url: 'https://github.com/nixocode/Class_Project_Sales_Plan', image: imageFor('class_project_sales_plan') },
-  { name: 'pool-guide', category: 'others', title: '42 Pool Prep Guide', categoryBadge: 'Technical Study', techStack: ['C', 'Systems', 'Algorithms'], description: 'Peer-tested C pool prep — algorithmic drills, Norme conformance and systems primitives built during on-site 42 training.', live_url: 'https://nixocode.github.io/C-pool-Prep/', html_url: 'https://github.com/nixocode/C-pool-Prep', image: imageFor('pool-guide') },
-  { name: 'fresc', category: 'others', title: 'Fresc', categoryBadge: 'Coursework', techStack: ['HTML', 'CSS', 'Type'], description: 'Coursework microsite exploring typographic restraint and editorial pacing — constraint-driven design study.', live_url: 'https://nixocode.github.io/Fresc/', html_url: 'https://github.com/nixocode/Fresc', image: imageFor('fresc') },
-  { name: 'law-civil-law', category: 'others', title: 'Civil Law Explainer', categoryBadge: 'Legal Study', techStack: ['HTML', 'CSS', 'Research'], description: 'Visual explainers compiled for a civil law course — dense statutory material distilled into scannable screens.', live_url: 'https://nixocode.github.io/Law-Civil-Web/', html_url: 'https://github.com/nixocode/Law-Civil-Web', image: imageFor('law-civil-law') },
+  { name: 'Class_Project_Sales_Plan', category: 'class', title: 'Sales Plan Playground', categoryBadge: 'Academic Study', techStack: ['HTML', 'CSS', 'JavaScript'], description: 'An interactive educational framework teaching a systematic 5-step approach to sales planning — from constraint analysis through market penetration strategy.', live_url: 'https://nixocode.github.io/Class_Project_Sales_Plan/', html_url: 'https://github.com/nixocode/Class_Project_Sales_Plan', image: imageFor('class_project_sales_plan') },
+  { name: 'pool-guide', category: 'class', title: '42 Pool Prep Guide', categoryBadge: 'Technical Study', techStack: ['C', 'Systems', 'Algorithms'], description: 'Peer-tested C pool prep — algorithmic drills, Norme conformance and systems primitives built during on-site 42 training.', live_url: 'https://nixocode.github.io/C-pool-Prep/', html_url: 'https://github.com/nixocode/C-pool-Prep', image: imageFor('pool-guide') },
+  { name: 'fresc', category: 'class', title: 'Fresc', categoryBadge: 'Coursework', techStack: ['HTML', 'CSS', 'Type'], description: 'Coursework microsite exploring typographic restraint and editorial pacing — constraint-driven design study.', live_url: 'https://nixocode.github.io/Fresc/', html_url: 'https://github.com/nixocode/Fresc', image: imageFor('fresc') },
+  { name: 'law-civil-law', category: 'class', title: 'Civil Law Explainer', categoryBadge: 'Legal Study', techStack: ['HTML', 'CSS', 'Research'], description: 'Visual explainers compiled for a civil law course — dense statutory material distilled into scannable screens.', live_url: 'https://nixocode.github.io/Law-Civil-Web/', html_url: 'https://github.com/nixocode/Law-Civil-Web', image: imageFor('law-civil-law') },
 ];
 
 function readCache() {
@@ -129,7 +129,7 @@ export async function loadProjects() {
         // recent/applied/open-source explorations.
         return {
           name: r.name,
-          category: 'others',
+          category: 'class',
           title,
           categoryBadge: 'Applied Studies & Open Source',
           techStack: stack,
@@ -241,7 +241,7 @@ export function renderProjects(projects, container) {
   // Group by category for easy track assembly.
   const groups = {};
   ordered.forEach(p => {
-    const c = (p.category && CATEGORIES.some(cat => cat.id === p.category)) ? p.category : 'others';
+    const c = (p.category && CATEGORIES.some(cat => cat.id === p.category)) ? p.category : 'class';
     (groups[c] ||= []).push(p);
   });
 
@@ -251,7 +251,7 @@ export function renderProjects(projects, container) {
   // the currently-active one; JS recomputes it on every lane switch.
   const stack = document.createElement('div');
   stack.className = 'branch-stack';
-  const RAILS = ['marketing', 'webdesign', 'games'];
+  const RAILS = ['marketing', 'webdesign', 'games', 'class'];
   const DEFAULT_ACTIVE = 'webdesign';
   RAILS.forEach((catId) => {
     const cat = CATEGORIES.find(c => c.id === catId);
@@ -260,33 +260,21 @@ export function renderProjects(projects, container) {
     track.className = 'branch-track';
     track.dataset.branch = catId;
     track.dataset.active = catId === DEFAULT_ACTIVE ? 'true' : 'false';
-    // Resting side of each inactive rail vs the default active (webdesign):
-    //   marketing → left, games → right.
     if (catId !== DEFAULT_ACTIVE) {
-      const order = RAILS.indexOf(catId) - RAILS.indexOf(DEFAULT_ACTIVE);
-      track.dataset.side = order < 0 ? 'left' : 'right';
+      const idx = RAILS.indexOf(catId);
+      const activeIdx = RAILS.indexOf(DEFAULT_ACTIVE);
+      if (Math.abs(idx - activeIdx) === 1) {
+        track.dataset.side = idx < activeIdx ? 'left' : 'right';
+      } else {
+        track.dataset.side = 'hidden';
+      }
     }
-    track.appendChild(buildHeader(cat));
     list.forEach((repo, li) => {
       track.appendChild(buildSection(repo, ordered.indexOf(repo), li));
     });
     stack.appendChild(track);
   });
   container.appendChild(stack);
-
-  // --- Trailing "Studies & Coursework" epilogue (always visible) ---
-  const others = groups.others || [];
-  if (others.length) {
-    const wrap = document.createElement('div');
-    wrap.className = 'branch-others';
-    wrap.dataset.branch = 'others';
-    const oCat = CATEGORIES.find(c => c.id === 'others');
-    wrap.appendChild(buildHeader(oCat));
-    others.forEach((repo, li) => {
-      wrap.appendChild(buildSection(repo, ordered.indexOf(repo), li));
-    });
-    container.appendChild(wrap);
-  }
 
   return ordered;
 }

@@ -113,26 +113,18 @@ export function revealHero() {
   // Halved durations across the whole intro — feels snappier, less
   // "loading screen", more "here I am".
   const tl = gsap.timeline();
-  if (h1) tl.add(revealHeadline(h1, { stagger: 0.015 }), 0);
   if (sub) {
     tl.fromTo(sub,
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.45, ease: 'expo.out' },
-      '-=0.3'
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.22, ease: 'expo.out' },
+      0
     );
   }
   if (actions) {
     tl.fromTo(actions,
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.45, ease: 'expo.out' },
-      '-=0.35'
-    );
-  }
-  if (scrollCue) {
-    tl.fromTo(scrollCue,
-      { opacity: 0 },
-      { opacity: 1, duration: 0.4, ease: 'power2.out' },
-      '-=0.15'
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.22, ease: 'expo.out' },
+      0.08
     );
   }
   return tl;

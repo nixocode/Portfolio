@@ -19,6 +19,7 @@ import { Biomes } from './webgl/Biomes.js';
 import { SmoothScroll } from './core/SmoothScroll.js';
 import { Cursor } from './core/Cursor.js';
 import { loadProjects, renderProjects } from './ui/Projects.js';
+import { createBirdsEyeView, showBirdsEyeView, hideBirdsEyeView } from './ui/BirdsEyeView.js';
 import { initHero, revealHero } from './ui/Hero.js';
 import { revealProjects, currentProjectIndex } from './ui/ScrollReveal.js';
 import { magnetizeAll } from './ui/MagneticButton.js';
@@ -113,10 +114,9 @@ async function bootstrap() {
   //
   // Camera & WebGL nodes follow `activeZone` so the 3D scene's nodes are
   // strictly the ones for the selected lane.
-  const ZONES = ['marketing', 'webdesign', 'games'];
-  // Must match BIOMES[*].x in ProjectNodes — wide spacing so tributaries never cross.
-  const branchLanes = { marketing: -14, webdesign: 0, games: 14, others: 22 };
-  const branchLengths = ['marketing', 'webdesign', 'games', 'others'].map(
+  const ZONES = ['marketing', 'webdesign', 'games', 'class'];
+  const branchLanes = { marketing: -14, webdesign: 0, games: 14, class: 22 };
+  const branchLengths = ['marketing', 'webdesign', 'games', 'class'].map(
     (id) => ordered.filter((p) => p.category === id).length
   );
   const maxBranch = Math.max(1, ...branchLengths);
@@ -144,6 +144,9 @@ async function bootstrap() {
     document.querySelectorAll('.branch-chip').forEach((c) => {
       c.setAttribute('aria-current', c.dataset.branch === zone ? 'true' : 'false');
     });
+    document.querySelectorAll('.nav-chip').forEach((c) => {
+      c.setAttribute('aria-current', c.dataset.navBranch === zone ? 'true' : 'false');
+    });
   };
 
   // Apply data-active / data-side / data-enter so CSS animates the swap.
@@ -162,13 +165,6 @@ async function bootstrap() {
         el.dataset.side = sideOf(z, zone);
       }
     });
-    // The "others" epilogue track is always visible and never moves —
-    // it just shouldn't get side classes.
-    if (trackEls.others) {
-      trackEls.others.dataset.active = 'true';
-      delete trackEls.others.dataset.side;
-      delete trackEls.others.dataset.enter;
-    }
   };
 
   // Smooth-scroll to the start of `zone`'s first card. Run inside rAF so
@@ -217,11 +213,9 @@ async function bootstrap() {
     });
   });
 
-  // Wire chips. Click = swap lane WITH scroll-to-first-card so it really
-  // feels like "diving into" that tributary.
   document.querySelectorAll('.branch-chip').forEach((chip) => {
     const zone = chip.dataset.branch;
-    chip.addEventListener('click', () => setActiveZone(zone, { scrollToTop: true }));
+    chip.addEventListener('click', () => setActiveZone(zone));
   });
 
   // --- Touch swipe lane switching (mobile) ----------------------------
@@ -320,6 +314,12 @@ async function bootstrap() {
     if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
     const k = e.key.toLowerCase();
 
+    if (k === 'escape' && birdsEyeActive) {
+      e.preventDefault();
+      toggleBirdsEye();
+      return;
+    }
+
     if (k === 'arrowleft' || k === 'a') {
       if (e.repeat) { e.preventDefault(); return; }
       e.preventDefault();
@@ -386,8 +386,151 @@ async function bootstrap() {
 
   // --- Hero UI wiring ---
   initHero();
-  // Magnetize project link arrows too.
   magnetizeAll('.project-links a', { strength: 0.25, max: 12 });
+
+  // --- Sticky header: dock branch chips into top-nav on scroll ---
+  const topNav = document.querySelector('.top-nav');
+  const branchPicker = document.querySelector('.branch-picker');
+
+  gsap.to(branchPicker, {
+    opacity: 0,
+    scale: 0.97,
+    scrollTrigger: {
+      trigger: branchPicker,
+      start: 'bottom 55%',
+      end: 'bottom top',
+      scrub: 0.3,
+    },
+  });
+
+  ScrollTrigger.create({
+    trigger: branchPicker,
+    start: 'bottom top+=20',
+    onEnter: () => topNav.classList.add('docked'),
+    onLeaveBack: () => topNav.classList.remove('docked'),
+  });
+
+  document.querySelectorAll('.nav-chip').forEach((chip) => {
+    const zone = chip.dataset.navBranch;
+    chip.addEventListener('click', () => setActiveZone(zone));
+  });
+
+  // --- Mouse edge navigation (desktop only) ---
+  const zoneAccents = {
+    marketing: '#ff6a5e', webdesign: '#5fd896',
+    games: '#5aa8ff', class: '#c89aff',
+  };
+
+  const desktopPointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+  if (desktopPointer.matches) {
+    const EDGE_ZONE = 0.14;
+    const COOLDOWN_MS = 400;
+    let edgeCooldown = 0;
+
+    const leftGlow = document.createElement('div');
+    leftGlow.className = 'edge-glow edge-glow-left';
+    document.body.appendChild(leftGlow);
+
+    const rightGlow = document.createElement('div');
+    rightGlow.className = 'edge-glow edge-glow-right';
+    document.body.appendChild(rightGlow);
+
+    const updateEdgeColors = () => {
+      const idx = ZONES.indexOf(activeZone);
+      const leftZone = idx > 0 ? ZONES[idx - 1] : null;
+      const rightZone = idx < ZONES.length - 1 ? ZONES[idx + 1] : null;
+      leftGlow.style.setProperty('--edge-accent', leftZone ? zoneAccents[leftZone] : '#fff');
+      rightGlow.style.setProperty('--edge-accent', rightZone ? zoneAccents[rightZone] : '#fff');
+    };
+    updateEdgeColors();
+
+    const origSetActiveZone = setActiveZone;
+    const setActiveZoneWrapped = (zone, opts) => {
+      origSetActiveZone(zone, opts);
+      updateEdgeColors();
+    };
+    // Patch all places that call setActiveZone isn't feasible, so hook
+    // into reflectChipState which runs on every zone change.
+    const origReflect = reflectChipState;
+
+    window.addEventListener('mousemove', (e) => {
+      if (birdsEyeActive) {
+        leftGlow.classList.remove('visible');
+        rightGlow.classList.remove('visible');
+        return;
+      }
+
+      if (e.target.closest('.hero, .top-nav, .branch-picker, .info-panel, .birdseye, button, a')) {
+        leftGlow.classList.remove('visible');
+        rightGlow.classList.remove('visible');
+        return;
+      }
+
+      const vw = window.innerWidth;
+      const x = e.clientX / vw;
+      const now = performance.now();
+      const idx = ZONES.indexOf(activeZone);
+      const canLeft = idx > 0;
+      const canRight = idx < ZONES.length - 1;
+
+      const inLeft = x < EDGE_ZONE && canLeft;
+      const inRight = x > (1 - EDGE_ZONE) && canRight;
+
+      leftGlow.classList.toggle('visible', inLeft);
+      rightGlow.classList.toggle('visible', inRight);
+
+      if (now - edgeCooldown < COOLDOWN_MS) return;
+
+      if (inLeft) {
+        edgeCooldown = now;
+        setActiveZone(ZONES[idx - 1]);
+        updateEdgeColors();
+      } else if (inRight) {
+        edgeCooldown = now;
+        setActiveZone(ZONES[idx + 1]);
+        updateEdgeColors();
+      }
+    }, { passive: true });
+  }
+
+  // --- Bird's Eye View ---
+  let birdsEyeActive = false;
+
+  const closeBirdsEye = () => {
+    hideBirdsEyeView();
+    birdsEyeActive = false;
+    topNav.classList.remove('birdseye-active');
+    smooth.start?.();
+  };
+
+  const toggleBirdsEye = () => {
+    birdsEyeActive = !birdsEyeActive;
+    if (birdsEyeActive) {
+      showBirdsEyeView();
+      smooth.stop?.();
+      topNav.classList.add('birdseye-active');
+    } else {
+      closeBirdsEye();
+    }
+  };
+
+  const birdseyeEl = createBirdsEyeView(ordered, (project) => {
+    closeBirdsEye();
+    const cat = project.category;
+    setActiveZone(cat, { scrollToTop: true });
+    requestAnimationFrame(() => {
+      const name = String(project.name).toLowerCase();
+      const section = document.querySelector(`.project-section[data-project-name="${name}"]`);
+      if (section && smooth.scrollTo) {
+        smooth.scrollTo(section, { offset: -80, duration: 0.6 });
+      }
+    });
+  }, closeBirdsEye);
+  document.body.appendChild(birdseyeEl);
+
+  document.querySelectorAll('#birdseye-toggle, #birdseye-toggle-hero').forEach(btn => {
+    btn.addEventListener('click', toggleBirdsEye);
+  });
 
   // --- Per-frame tick ---
   let last = performance.now();
@@ -415,7 +558,7 @@ async function bootstrap() {
     // saturated by ~35% so the paths read as red/green/blue well before
     // you reach the bottom of the page.
     const p = Math.max(0, Math.min(1, (scene.scroll - 0.04) / 0.31));
-    const sat = p * p * (3 - 2 * p);
+    const sat = p * p * (3 - 2 * p) * 0.5;
     projectNodes.setSaturation(sat);
     if (biomes.setSaturation) biomes.setSaturation(sat);
 

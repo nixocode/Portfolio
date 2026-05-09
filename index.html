@@ -55,7 +55,32 @@
   <canvas id="webgl" aria-hidden="true" role="presentation" tabindex="-1"></canvas>
 
   <!-- Fixed nav sits outside #app so it never participates in scroll transforms -->
-  <header class="top-nav"></header>
+  <header class="top-nav">
+    <nav class="nav-chips interactive" aria-label="Section navigation">
+      <button type="button" class="nav-chip" data-nav-branch="marketing" style="--chip-accent: #ff6a5e;">
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span>Content &amp; Marketing</span>
+      </button>
+      <button type="button" class="nav-chip" data-nav-branch="webdesign" style="--chip-accent: #5fd896;">
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span>Web, Apps &amp; AI</span>
+      </button>
+      <button type="button" class="nav-chip" data-nav-branch="games" style="--chip-accent: #5aa8ff;">
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span>Game Design</span>
+      </button>
+      <button type="button" class="nav-chip" data-nav-branch="class" style="--chip-accent: #c89aff;">
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span>Learning</span>
+      </button>
+      <button type="button" class="nav-birdseye interactive" id="birdseye-toggle" title="Bird's-Eye View">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </button>
+    </nav>
+  </header>
 
   <main id="app">
     <a id="main-content" tabindex="-1"></a>
@@ -239,21 +264,24 @@
               <polyline points="5,12 12,19 19,12"></polyline>
             </svg>
           </button>
+          <button type="button" class="branch-chip" data-branch="class"
+            style="--chip-accent: #c89aff;">
+            <span class="chip-dot" aria-hidden="true"></span>
+            <span class="chip-label">Learning</span>
+            <svg class="chip-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="5,12 12,19 19,12"></polyline>
+            </svg>
+          </button>
+          <button type="button" class="birdseye-chip interactive" id="birdseye-toggle-hero">
+            Bird's-Eye
+          </button>
         </div>
         <div class="branch-picker-hint">Hover · ← → or A/D to branch · ↓ or S to descend</div>
       </nav>
 
-      <div class="scroll-cue" aria-hidden="true">
-        <div class="scroll-cue-line"></div>
-      </div>
     </section>
-
-    <!-- Visual transition between hero and first project -->
-    <div class="section-divider" aria-hidden="true">
-      <div class="divider-line"></div>
-      <div class="divider-label">// SELECTED WORK</div>
-      <div class="divider-line"></div>
-    </div>
 
     <div id="projects-container"></div>
 
@@ -309,10 +337,6 @@
             </li>
           </ul>
         </nav>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 Nicolas Pertierra</span>
-        <span class="footer-signal"><span class="status-dot" aria-hidden="true"></span></span>
       </div>
     </footer>
   </main>

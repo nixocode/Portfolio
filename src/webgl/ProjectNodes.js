@@ -45,7 +45,7 @@ export const BIOMES = {
   marketing: { x: -14, accent: '#ff6a5e', dense: true,  pattern: 'organic', route: 's-sweep', lift: 2.8, sway: 1.3 },
   webdesign: { x:   0, accent: '#5fd896', dense: false, pattern: 'grid',    route: 'helix',   lift: 2.0, sway: 0.5 },
   games:     { x:  14, accent: '#5aa8ff', dense: true,  pattern: 'sharp',   route: 'zigzag',  lift: 1.4, sway: 0.3 },
-  others:    { x:  22, accent: '#8a93a2', dense: false, pattern: 'sparse',  route: 'meander', lift: 0.8, sway: 0.6 },
+  class:     { x:  22, accent: '#c89aff', dense: false, pattern: 'sparse',  route: 'meander', lift: 0.8, sway: 0.6 },
 };
 const BRANCHES = Object.keys(BIOMES);
 const BRANCH_Z_STEP = 5.2;
@@ -83,7 +83,7 @@ export class ProjectNodes {
     projects.forEach((project, i) => {
       const cat = project.category && BIOMES[project.category]
         ? project.category
-        : 'others';
+        : 'class';
       const biome = BIOMES[cat];
       const lane = biome.x;
       const local = branchCounts[cat] = (branchCounts[cat] || 0) + 1;
@@ -476,13 +476,9 @@ export class ProjectNodes {
 
   update(time, dt) {
     this.raycaster.setFromCamera(this.pointer, this.camera);
-    // Only raycast against nodes on the currently-active tributary (plus
-    // the always-visible "others" epilogue). Inactive tributaries are
-    // still in the scene but faded; they must not intercept hovers or
-    // clicks — that's the "click marketing, get Tailor" bug.
     const active = this._activeCat;
     const meshes = this.nodes
-      .filter(n => !active || n.category === active || n.category === 'others')
+      .filter(n => !active || n.category === active)
       .map(n => n.mesh);
     const hit = this.raycaster.intersectObjects(meshes, false)[0];
 
@@ -529,9 +525,7 @@ export class ProjectNodes {
   // marketing nodes drifting on the left while you descended webdesign.
   setActiveCategory(cat) {
     this._activeCat = cat;
-    // "others" (Studies & Coursework) is the trailing epilogue — it should
-    // always remain visible regardless of which main tributary is active.
-    const isVisible = (nodeCat) => nodeCat === cat || nodeCat === 'others';
+    const isVisible = (nodeCat) => nodeCat === cat;
 
     // Per-node mesh / halo / dendrite visibility.
     this.nodes.forEach(n => {
