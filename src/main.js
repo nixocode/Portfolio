@@ -19,10 +19,11 @@ import { Biomes } from './webgl/Biomes.js';
 import { SmoothScroll } from './core/SmoothScroll.js';
 import { Cursor } from './core/Cursor.js';
 import { loadProjects, renderProjects } from './ui/Projects.js';
-import { createBirdsEyeView, showBirdsEyeView, hideBirdsEyeView } from './ui/BirdsEyeView.js';
 import { initHero, revealHero } from './ui/Hero.js';
 import { revealProjects, currentProjectIndex } from './ui/ScrollReveal.js';
 import { magnetizeAll } from './ui/MagneticButton.js';
+import { initGestures } from './cinema/gestures.js';
+import { initLivePreviews } from './ui/LivePreview.js';
 import { damp } from './utils/math.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -62,10 +63,14 @@ async function bootstrap() {
   // --- Three.js scene ---
   const scene = new Scene(canvas, loader.manager);
   // Global ambient field is lighter now — per-biome clusters supplement it.
-  const neural = new NeuralField(scene.scene, { count: scene.mobile ? 1000 : 2000 });
+  // Scale the ambient field to the device. `lowEnd` already folds in
+  // reduced-motion, low core/memory counts and mobile, so weak hardware gets a
+  // markedly lighter scene while desktops keep the full density.
+  const density = scene.lowEnd ? 0.45 : scene.mobile ? 0.6 : 1;
+  const neural = new NeuralField(scene.scene, { count: Math.round(2000 * density) });
   const fibers = new FiberNetwork(scene.scene, {
-    nodeCount: scene.mobile ? 50 : 90,
-    maxConnections: 3,
+    nodeCount: Math.round(90 * density),
+    maxConnections: scene.lowEnd ? 2 : 3,
     maxDist: 7,
   });
   const projectNodes = new ProjectNodes(
@@ -218,43 +223,21 @@ async function bootstrap() {
     chip.addEventListener('click', () => setActiveZone(zone));
   });
 
-  // --- Touch swipe lane switching (mobile) ----------------------------
-  // Only fires on a clear horizontal flick: dx > 60px AND |dx| > 1.4×|dy|.
-  // Vertical scrolls and tap-scrolls are ignored, so the page still
-  // scrolls naturally with one finger. Single-finger only — pinches
-  // and multi-touch gestures pass through.
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let touchStartTime = 0;
-  let touchTracking = false;
-  window.addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 1) { touchTracking = false; return; }
-    const t = e.touches[0];
-    touchStartX = t.clientX;
-    touchStartY = t.clientY;
-    touchStartTime = performance.now();
-    touchTracking = true;
-  }, { passive: true });
-  window.addEventListener('touchend', (e) => {
-    if (!touchTracking) return;
-    touchTracking = false;
-    const t = e.changedTouches[0];
-    if (!t) return;
-    const dx = t.clientX - touchStartX;
-    const dy = t.clientY - touchStartY;
-    const dt = performance.now() - touchStartTime;
-    // Reject slow drags (probably text-select), tiny moves, or
-    // mostly-vertical motion (page scroll).
-    if (dt > 800) return;
-    if (Math.abs(dx) < 60) return;
-    if (Math.abs(dx) < Math.abs(dy) * 1.4) return;
-    const idx = ZONES.indexOf(activeZone);
-    if (dx < 0 && idx < ZONES.length - 1) {
-      setActiveZone(ZONES[idx + 1], { scrollToTop: true });
-    } else if (dx > 0 && idx > 0) {
-      setActiveZone(ZONES[idx - 1], { scrollToTop: true });
-    }
-  }, { passive: true });
+  // --- Cross-device swipe lane switching (rework upgrade) ---------------
+  // Touch flick, trackpad two-finger horizontal swipe, and mouse/pen drag
+  // all flip lanes — loosened thresholds so it's easy on Mac, Windows and
+  // mobile. Vertical scrolling is never hijacked.
+  initGestures({
+    onNext: () => {
+      const idx = ZONES.indexOf(activeZone);
+      if (idx < ZONES.length - 1) setActiveZone(ZONES[idx + 1], { scrollToTop: true });
+    },
+    onPrev: () => {
+      const idx = ZONES.indexOf(activeZone);
+      if (idx > 0) setActiveZone(ZONES[idx - 1], { scrollToTop: true });
+    },
+    blocked: () => birdsEyeActive,
+  });
 
   // --- Keyboard navigation ---
   //   ← / A : previous lane (animated)
@@ -314,12 +297,6 @@ async function bootstrap() {
     if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
     const k = e.key.toLowerCase();
 
-    if (k === 'escape' && birdsEyeActive) {
-      e.preventDefault();
-      toggleBirdsEye();
-      return;
-    }
-
     if (k === 'arrowleft' || k === 'a') {
       if (e.repeat) { e.preventDefault(); return; }
       e.preventDefault();
@@ -377,12 +354,15 @@ async function bootstrap() {
     trigger: '#app',
     start: 'top top',
     end: 'bottom bottom',
-    scrub: 1.2,
+    scrub: 0.45,   // was 1.2 — the camera was lagging >1s behind the scroll
     onUpdate: (self) => {
       scene.cameraZ = 6 - self.progress * totalDepth;
       scene.setScroll(self.progress);
     },
   });
+
+  // --- Live game previews (hover a game card → the real game boots inside) ---
+  initLivePreviews();
 
   // --- Hero UI wiring ---
   initHero();
@@ -453,7 +433,10 @@ async function bootstrap() {
     // into reflectChipState which runs on every zone change.
     const origReflect = reflectChipState;
 
-    window.addEventListener('mousemove', (e) => {
+    // rAF-throttled: this handler runs a multi-selector `closest()` walk, which
+    // is wasteful at raw mousemove rate (can fire >1x per frame).
+    let _edgeRaf = 0, _edgeEvt = null;
+    const onEdgeMove = (e) => {
       if (birdsEyeActive) {
         leftGlow.classList.remove('visible');
         rightGlow.classList.remove('visible');
@@ -490,50 +473,24 @@ async function bootstrap() {
         setActiveZone(ZONES[idx + 1]);
         updateEdgeColors();
       }
+    };
+    window.addEventListener('mousemove', (e) => {
+      _edgeEvt = e;
+      if (_edgeRaf) return;
+      _edgeRaf = requestAnimationFrame(() => { _edgeRaf = 0; onEdgeMove(_edgeEvt); });
     }, { passive: true });
   }
 
-  // --- Bird's Eye View ---
-  let birdsEyeActive = false;
-
-  const closeBirdsEye = () => {
-    hideBirdsEyeView();
-    birdsEyeActive = false;
-    topNav.classList.remove('birdseye-active');
-    smooth.start?.();
-  };
-
-  const toggleBirdsEye = () => {
-    birdsEyeActive = !birdsEyeActive;
-    if (birdsEyeActive) {
-      showBirdsEyeView();
-      smooth.stop?.();
-      topNav.classList.add('birdseye-active');
-    } else {
-      closeBirdsEye();
-    }
-  };
-
-  const birdseyeEl = createBirdsEyeView(ordered, (project) => {
-    closeBirdsEye();
-    const cat = project.category;
-    setActiveZone(cat, { scrollToTop: true });
-    requestAnimationFrame(() => {
-      const name = String(project.name).toLowerCase();
-      const section = document.querySelector(`.project-section[data-project-name="${name}"]`);
-      if (section && smooth.scrollTo) {
-        smooth.scrollTo(section, { offset: -80, duration: 0.6 });
-      }
-    });
-  }, closeBirdsEye);
-  document.body.appendChild(birdseyeEl);
-
-  document.querySelectorAll('#birdseye-toggle, #birdseye-toggle-hero').forEach(btn => {
-    btn.addEventListener('click', toggleBirdsEye);
-  });
+  // --- Top Down View ---
+  // The old in-page bird's-eye overlay is replaced by a dedicated page
+  // (topdown.html → the 3D node metaverse) that the nav/hero links open in a
+  // new tab, so no JS wiring is needed here. `birdsEyeActive` stays as a
+  // permanent false so the gesture/keyboard guards below keep reading clean.
+  const birdsEyeActive = false;
 
   // --- Per-frame tick ---
   let last = performance.now();
+  let _lastActiveScan = 0, _lastScanScroll = -1, _activeIdx = -1;
   scene.onTick = (time) => {
     const now = performance.now();
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -559,12 +516,26 @@ async function bootstrap() {
     // you reach the bottom of the page.
     const p = Math.max(0, Math.min(1, (scene.scroll - 0.04) / 0.31));
     const sat = p * p * (3 - 2 * p) * 0.5;
+    // Only the PATHWAYS carry colour — trunks, nodes, halos and pulses ramp to
+    // their branch accent. The background field (biome clusters, neural dust,
+    // fibers) is left fully monochrome so the coloured routes are the only
+    // hue on screen and read as the highlight.
     projectNodes.setSaturation(sat);
-    if (biomes.setSaturation) biomes.setSaturation(sat);
 
     // Highlight whichever project card is nearest the viewport center.
-    const active = currentProjectIndex(ordered.length);
-    projectNodes.setActiveByIndex(active);
+    // This reads layout (a rect per card), so it runs at ~8Hz and only when
+    // the scroll actually moved — doing it every frame forced 14 synchronous
+    // layouts per frame, which was the main source of input lag.
+    const nowMs = now;
+    if (nowMs - _lastActiveScan > 120 && scene.scroll !== _lastScanScroll) {
+      _lastActiveScan = nowMs;
+      _lastScanScroll = scene.scroll;
+      const active = currentProjectIndex(ordered.length);
+      if (active !== _activeIdx) {
+        _activeIdx = active;
+        projectNodes.setActiveByIndex(active);
+      }
+    }
   };
 
   // GSAP's ticker callback provides real elapsed time in seconds — use it
@@ -572,9 +543,18 @@ async function bootstrap() {
   // Clamp between 0 and 0.1s so a tab regaining focus can't produce a huge jump.
   gsap.ticker.lagSmoothing(1000, 16);
   gsap.ticker.add((_t, deltaMs) => {
+    // Don't render into a hidden tab — saves battery and avoids the catch-up
+    // jank when the user comes back.
+    if (document.hidden) return;
     const dt = Math.min(0.1, Math.max(0, (deltaMs || 16) / 1000));
     scene.tick(dt);
   });
+
+  // --- Easter egg: a message for whoever opens the console ---
+  try {
+    console.log('%cNico Pertierra', 'font:700 24px ui-rounded,sans-serif;color:#5fd896');
+    console.log('%cPoking around under the hood? I like you already.\nHand-built: vanilla JS, real-time WebGL, no UI frameworks.\nLet’s talk → nicowork277@gmail.com', 'font:13px ui-monospace,monospace;color:#aab0b8;line-height:1.6');
+  } catch { /* no console — fine */ }
 
   sceneReadyResolve();
 }

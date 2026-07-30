@@ -26,3 +26,6 @@ Marketing_content/
 *.njsproj
 *.sln
 *.sw?
+
+# Internal dev notes — never commit or deploy
+devnotes_DONOTUPLOAD*

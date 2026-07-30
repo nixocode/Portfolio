@@ -460,6 +460,7 @@ export class ProjectNodes {
   _onMove(e) {
     this.pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
     this.pointer.y = -((e.clientY / window.innerHeight) * 2 - 1);
+    this._pointerMoved = true;   // lets update() skip idle raycasts
   }
 
   _onClick(e) {
@@ -475,18 +476,33 @@ export class ProjectNodes {
   }
 
   update(time, dt) {
-    this.raycaster.setFromCamera(this.pointer, this.camera);
+    // Hover picking used to raycast EVERY frame and rebuild the candidate
+    // array with filter().map() each time (two allocations + a full raycast
+    // at 60-120Hz). Now: the mesh list is cached per active category, and we
+    // only re-pick when the pointer moved — with a slow fallback so camera
+    // drift still updates the hover eventually.
     const active = this._activeCat;
-    const meshes = this.nodes
-      .filter(n => !active || n.category === active)
-      .map(n => n.mesh);
-    const hit = this.raycaster.intersectObjects(meshes, false)[0];
+    // `!this._meshCache` matters: on the very first update `_activeCat` is
+    // still undefined, so a bare `!==` comparison would never build the cache.
+    if (!this._meshCache || this._meshCacheCat !== active) {
+      this._meshCacheCat = active;
+      this._meshCache = this.nodes
+        .filter(n => !active || n.category === active)
+        .map(n => n.mesh);
+    }
+    const nowMs = time * 1000;
+    if (this._pointerMoved || nowMs - (this._lastPick || 0) > 150) {
+      this._pointerMoved = false;
+      this._lastPick = nowMs;
+      this.raycaster.setFromCamera(this.pointer, this.camera);
+      const hit = this.raycaster.intersectObjects(this._meshCache, false)[0];
 
-    const prevHovered = this.hovered;
-    this.hovered = hit ? this.nodes.find(n => n.mesh === hit.object) : null;
+      const prevHovered = this.hovered;
+      this.hovered = hit ? this.nodes.find(n => n.mesh === hit.object) : null;
 
-    if (this.hovered && !prevHovered) document.body.classList.add('cursor-node');
-    else if (!this.hovered && prevHovered) document.body.classList.remove('cursor-node');
+      if (this.hovered && !prevHovered) document.body.classList.add('cursor-node');
+      else if (!this.hovered && prevHovered) document.body.classList.remove('cursor-node');
+    }
 
     this.nodes.forEach(node => {
       const target = node === this.hovered ? 1 : node.mesh.userData.pulseTarget;

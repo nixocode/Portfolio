@@ -2,7 +2,7 @@
 // skeleton height so there's zero layout shift on hydration.
 
 const USERNAME = 'nixocode';
-const CACHE_KEY = 'nixocode-repos-v4';
+const CACHE_KEY = 'nixocode-repos-v5';
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 const ASSET = (p) => `${import.meta.env.BASE_URL}${p}`;
 
@@ -12,13 +12,14 @@ const PROJECT_IMAGES = {
   'content-marketing':        ASSET('projects/content-marketing.jpg'),
   'tailor':                   ASSET('projects/tailor.jpg'),
   'la-zona-segura':           ASSET('projects/la-zona-segura.jpg'),
-  'global-strike-game':       ASSET('projects/global-strike-game.jpg'),
+  'global-strike-game':       ASSET('projects/global-strike-2.jpg'),
+  'vietnam-65':               ASSET('projects/vietnam-65.jpg'),
   're-ground':                ASSET('projects/re-ground.jpg'),
   'class_project_sales_plan': ASSET('projects/sales-plan.jpg'),
   'law-civil-law':            ASSET('projects/law-civil-law.jpg'),
   'pool-guide':               ASSET('projects/pool-guide.jpg'),
   'fresc':                    ASSET('projects/fresc.jpg'),
-  'ai2b':                     ASSET('projects/ai2b.png'),
+  'ai2b':                     ASSET('projects/ai2b.jpg'),
 };
 const imageFor = (name) => PROJECT_IMAGES[String(name || '').toLowerCase()] || null;
 
@@ -40,7 +41,8 @@ export const knownProjects = [
   { name: 'Content-marketing', category: 'marketing', title: 'Content & Marketing', categoryBadge: 'Content Creation & Social Media', techStack: ['Instagram', 'Photography', 'Production'], description: 'End-to-end social content — planning, capture, production, analytics. 2× follower and engagement growth, measurable sales impact.', live_url: 'https://nixocode.github.io/Content-marketing/', html_url: 'https://github.com/nixocode/Content-marketing', image: imageFor('content-marketing') },
 
   // --- Game Design ---
-  { name: 'global-strike-game', category: 'games', title: 'Global Strike — Nuclear Strategy', categoryBadge: 'Interactive Simulations', techStack: ['Three.js', 'HTML', 'CSS'], description: 'A visually immersive browser-based nuclear strategy game simulating DEFCON protocols and global conflict scenarios.', live_url: 'https://nixocode.github.io/global-strike-game/', html_url: 'https://github.com/nixocode/global-strike-game', image: imageFor('global-strike-game') },
+  { name: 'global-strike-game', category: 'games', title: 'Global Strike — Nuclear Strategy', categoryBadge: 'Real-Time Strategy Sim', techStack: ['Three.js', 'WebGL', 'JavaScript'], description: 'A real-time 3D-globe nuclear strategy sim — DEFCON escalation, a live intel feed and multiple game modes (including a fast Arcade mode). Newest build with new game modes.', live_url: 'https://global-strike-game.vercel.app', html_url: 'https://github.com/nixocode/global-strike-game', image: imageFor('global-strike-game') },
+  { name: 'vietnam-65', category: 'games', title: "Vietnam '65", categoryBadge: 'Lane-Tactics War Game', techStack: ['Canvas', 'JavaScript', 'Game Design'], description: "A lane-tactics war game in the tradition of Warfare 1944 — Campaign, Skirmish and Field Manual modes, depicting 1965–69 with documentary intent.", live_url: 'https://vietnam-65.vercel.app', image: imageFor('vietnam-65') },
   { name: 'global-conflict-tracker', category: 'games', title: 'Global Conflict Tracker', categoryBadge: 'Geopolitical Simulation', techStack: ['D3.js', 'JavaScript', 'CSS'], description: 'An interactive, real-time 3D globe visualizing active geopolitical conflicts and regional tensions — work in progress.' },
 
   // --- Web, Apps & AI (AI + safety platforms live here) ---
@@ -221,7 +223,7 @@ export function renderProjects(projects, container) {
     const hasImage = !!repo.image;
     section.innerHTML = `
       <div class="project-details${hasImage ? ' has-image' : ''}" id="project-${globalIdx}">
-        ${hasImage ? `<div class="project-bg" style="background-image:url('${encodeURI(repo.image)}')"></div>` : ''}
+        ${hasImage ? `<div class="project-bg" data-bg="${encodeURI(repo.image)}"></div>` : ''}
         <div class="project-index">${pad(globalIdx + 1)} / ${pad(total)}</div>
         ${repo.categoryBadge ? `<div class="category-badge">${escapeHTML(repo.categoryBadge)}</div>` : ''}
         <h2 class="project-title split-target">${escapeHTML(repo.title)}</h2>
@@ -275,6 +277,19 @@ export function renderProjects(projects, container) {
     stack.appendChild(track);
   });
   container.appendChild(stack);
+
+  // Screenshots load only as their card approaches the viewport — with 14
+  // cards across 4 lanes, eager-loading every background stalls first paint.
+  const bgIO = new IntersectionObserver((entries, obs) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const src = el.dataset.bg;
+      if (src) { el.style.backgroundImage = `url('${src}')`; delete el.dataset.bg; }
+      obs.unobserve(el);
+    });
+  }, { rootMargin: '400px 0px' });
+  container.querySelectorAll('.project-bg[data-bg]').forEach((el) => bgIO.observe(el));
 
   return ordered;
 }

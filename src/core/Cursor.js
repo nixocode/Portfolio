@@ -52,8 +52,10 @@ export class Cursor {
     if (!this.dot) return;
 
     // Dot snaps fast; ring lags for weight.
-    this.dotPos.x  = damp(this.dotPos.x,  this.target.x, 0.35, dt);
-    this.dotPos.y  = damp(this.dotPos.y,  this.target.y, 0.35, dt);
+    // Near-instant: a dot that trails the real pointer makes the whole site
+    // feel laggy. The ring keeps the smooth trail.
+    this.dotPos.x  = damp(this.dotPos.x,  this.target.x, 0.04, dt);
+    this.dotPos.y  = damp(this.dotPos.y,  this.target.y, 0.04, dt);
     this.ringPos.x = damp(this.ringPos.x, this.target.x, 0.15, dt);
     this.ringPos.y = damp(this.ringPos.y, this.target.y, 0.15, dt);
 

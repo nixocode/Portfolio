@@ -13,8 +13,9 @@ export class SmoothScroll {
     const reduce = prefersReducedMotion();
 
     this.lenis = new Lenis({
-      // Lower = snappier, higher = buttery.
-      duration: 1.15,
+      // Lower = snappier, higher = buttery. 1.15 read as floaty/laggy —
+      // the wheel took over a second to settle.
+      duration: 0.75,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: !reduce,
       syncTouch: false,

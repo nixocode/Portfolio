@@ -3,6 +3,13 @@
 
 <head>
   <meta charset="UTF-8" />
+  <!-- Content Security Policy. Safe to be strict here: the build emits ZERO
+       inline scripts, so `script-src 'self'` needs no unsafe-inline. Style
+       needs unsafe-inline because the 3D layer writes inline style attributes
+       (transform/opacity) every frame. frame-src lists ONLY the game
+       deployments used by the hover live-preview — add a domain here if you
+       add another embeddable project. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.github.com; frame-src https://global-strike-game.vercel.app https://vietnam-65.vercel.app; object-src 'none'; base-uri 'self'; form-action 'none'" />
   <link rel="icon" type="image/png" href="/Portfolio/logo.png" />
   <link rel="apple-touch-icon" href="/Portfolio/logo.png" />
   <link rel="icon" type="image/svg+xml" href="/Portfolio/favicon.svg" />
@@ -73,19 +80,19 @@
         <span class="chip-dot" aria-hidden="true"></span>
         <span>Learning</span>
       </button>
-      <button type="button" class="nav-birdseye interactive" id="birdseye-toggle" title="Bird's-Eye View">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"></circle>
-          <circle cx="12" cy="12" r="3"></circle>
+      <a class="nav-birdseye interactive" id="topdown-toggle" href="/Portfolio/topdown.html"
+         target="_blank" rel="noopener" title="Top Down View">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2.5 10.5c2.1 0 3.8-1.3 5-3.9.35-.75 1.05-.75 1.4 0 1.2 2.6 2.9 3.9 5 3.9"></path>
+          <path d="M12.8 17.6c1.5 0 2.7-.95 3.6-2.85.25-.55.75-.55 1 0 .9 1.9 2.1 2.85 3.6 2.85"></path>
         </svg>
-      </button>
+      </a>
     </nav>
   </header>
 
   <main id="app">
     <a id="main-content" tabindex="-1"></a>
     <section class="section hero" id="hero">
-      <div class="hero-eyebrow interactive">Creative Developer · Barcelona</div>
       <h1>Nico Pertierra</h1>
       <p class="hero-subtitle">Creative developer blending brand storytelling, interactive experiences and AI-driven workflows — where design craft meets engineered precision.</p>
 
@@ -232,7 +239,7 @@
       </div>
 
       <nav class="branch-picker interactive" role="navigation" aria-label="Choose a neural tributary">
-        <div class="branch-picker-label">2026 projects</div>
+        <div class="branch-picker-label">2026 · AI-assisted projects</div>
         <div class="branch-picker-row">
           <button type="button" class="branch-chip" data-branch="marketing"
             style="--chip-accent: #ff6a5e;">
@@ -274,9 +281,16 @@
               <polyline points="5,12 12,19 19,12"></polyline>
             </svg>
           </button>
-          <button type="button" class="birdseye-chip interactive" id="birdseye-toggle-hero">
-            Bird's-Eye
-          </button>
+          <a class="birdseye-chip interactive" id="topdown-toggle-hero"
+             href="/Portfolio/topdown.html" target="_blank" rel="noopener"
+             title="Bird's-eye: the whole network at once">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.5 10.5c2.1 0 3.8-1.3 5-3.9.35-.75 1.05-.75 1.4 0 1.2 2.6 2.9 3.9 5 3.9"></path>
+          <path d="M12.8 17.6c1.5 0 2.7-.95 3.6-2.85.25-.55.75-.55 1 0 .9 1.9 2.1 2.85 3.6 2.85"></path>
+            </svg>
+            <span>Top Down View</span>
+          </a>
         </div>
         <div class="branch-picker-hint">Hover · ← → or A/D to branch · ↓ or S to descend</div>
       </nav>
@@ -289,7 +303,6 @@
       <div class="footer-inner">
         <div class="footer-col footer-col-brand">
           <div class="footer-brand">Nicolas Pertierra</div>
-          <div class="footer-tagline">Creative Developer — Barcelona</div>
           <button type="button" class="footer-contact-btn" data-contact-action>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -300,7 +313,6 @@
           </button>
         </div>
         <nav class="footer-col footer-col-links" aria-label="Social links">
-          <div class="footer-col-label">// ELSEWHERE</div>
           <ul class="footer-links">
             <li>
               <a href="https://github.com/nixocode" target="_blank" rel="noopener" class="footer-link">

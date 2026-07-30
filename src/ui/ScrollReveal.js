@@ -65,9 +65,17 @@ export function revealProjects() {
   });
 }
 
-// Proximity-to-camera → which project node pulses. Called every frame.
+// Proximity-to-camera → which project node pulses.
+// NOTE: this forces layout (one getBoundingClientRect per card), so main.js
+// throttles it instead of calling it every frame. The card list is cached —
+// re-querying the DOM on every call was pure waste.
+let _cardCache = null;
+export function invalidateCardCache() { _cardCache = null; }
 export function currentProjectIndex(totalCards) {
-  const cards = document.querySelectorAll('.project-section');
+  if (!_cardCache || !_cardCache.length || !_cardCache[0].isConnected) {
+    _cardCache = Array.from(document.querySelectorAll('.project-section'));
+  }
+  const cards = _cardCache;
   const vh = window.innerHeight;
   const center = vh * 0.5;
   let best = -1;

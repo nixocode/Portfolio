@@ -30,7 +30,11 @@ export class Scene {
     // that's already asking us to ease up).
     const cores = (navigator.hardwareConcurrency || 8);
     const mem   = (navigator.deviceMemory || 8);
-    this.lowEnd = this.reducedMotion || cores < 4 || mem < 3;
+    // Bloom is a fullscreen post pass — by far the most expensive thing here.
+    // Phones and weak machines skip it entirely (additive blending still makes
+    // the trunks glow, so the look survives) and that's the single biggest
+    // framerate win available on mobile.
+    this.lowEnd = this.reducedMotion || cores < 4 || mem < 3 || this.mobile;
 
     this._initRenderer();
     this._initScene();
@@ -85,6 +89,12 @@ export class Scene {
   }
 
   _initPost() {
+    // No bloom (mobile / low-end / reduced-motion) → skip the composer
+    // altogether. An EffectComposer with nothing but RenderPass+OutputPass
+    // still allocates offscreen render targets and costs a fullscreen blit
+    // every frame, so on those devices we draw straight to the canvas.
+    if (this.lowEnd) { this.composer = null; return; }
+
     this.composer = new EffectComposer(this.renderer);
     this.composer.setPixelRatio(Math.min(window.devicePixelRatio, this.mobile ? 1.25 : 1.5));
     this.composer.setSize(this.size.w, this.size.h);
@@ -131,8 +141,10 @@ export class Scene {
     this.renderer.setSize(this.size.w, this.size.h);
     const pr = Math.min(window.devicePixelRatio, this.mobile ? 1.25 : 1.5);
     this.renderer.setPixelRatio(pr);
-    this.composer.setPixelRatio(pr);
-    this.composer.setSize(this.size.w, this.size.h);
+    if (this.composer) {
+      this.composer.setPixelRatio(pr);
+      this.composer.setSize(this.size.w, this.size.h);
+    }
   }
 
   _onMouse(e) {
@@ -173,7 +185,8 @@ export class Scene {
     }
 
     if (this.onTick) this.onTick(time, dt);
-    this.composer.render();
+    if (this.composer) this.composer.render();
+    else this.renderer.render(this.scene, this.camera);
   }
 
   dispose() {
