@@ -1724,3 +1724,30 @@ body.cursor-node .cursor-dot {
 }
 .birdseye-chip svg { opacity: 0.8; flex: none; }
 .birdseye-chip:hover svg { opacity: 1; }
+
+/* =========================================================================
+   Link / tap-highlight reset.
+   The Top Down View entry points became <a> elements (they open a real page in
+   a new tab). Without a colour reset they inherit the UA's default link blue —
+   and because the bird glyph is stroke="currentColor", the icon itself rendered
+   BLUE once the nav docked on scroll. Also kills the translucent blue tap flash
+   on touch, and stops drag-to-switch gestures from blue-selecting text.
+   ========================================================================= */
+a { color: inherit; text-decoration: none; }
+a:link, a:visited, a:hover, a:active { color: inherit; }
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Chrome/UI must never look text-selectable — dragging across it to switch
+   categories used to paint the default blue selection over everything. */
+.top-nav, .branch-picker, .hero-actions, .nav-chip, .branch-chip,
+.nav-birdseye, .birdseye-chip, .hero-btn, .cursor-dot, .cursor-ring,
+.project-index, .category-badge, .tech-badge {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Selection colour: neutral, never the default blue. */
+::selection { background: rgba(232, 234, 237, 0.22); color: #fff; }
