@@ -41,7 +41,7 @@ export const knownProjects = [
   { name: 'Content-marketing', category: 'marketing', title: 'Content & Marketing', categoryBadge: 'Content Creation & Social Media', techStack: ['Instagram', 'Photography', 'Production'], description: 'End-to-end social content — planning, capture, production, analytics. 2× follower and engagement growth, measurable sales impact.', live_url: 'https://nixocode.github.io/Content-marketing/', html_url: 'https://github.com/nixocode/Content-marketing', image: imageFor('content-marketing') },
 
   // --- Game Design ---
-  { name: 'global-strike-game', category: 'games', title: 'Global Strike — Nuclear Strategy', categoryBadge: 'Real-Time Strategy Sim · In Development', techStack: ['Three.js', 'WebGL', 'JavaScript'], description: 'A real-time 3D-globe nuclear strategy sim — DEFCON escalation and a live intel feed, across four modes: Campaign, Realistic, Arcade and Sandbox.', live_url: 'https://global-strike-v0-1.vercel.app', html_url: 'https://github.com/nixocode/global-strike-game', image: imageFor('global-strike-game') },
+  { name: 'global-strike-game', category: 'games', title: 'Global Strike — Nuclear Strategy', categoryBadge: 'Real-Time Strategy Sim · In Development', techStack: ['Three.js', 'WebGL', 'JavaScript'], description: 'A real-time 3D-globe nuclear strategy sim — DEFCON escalation and a live intel feed, across four modes: Campaign, Realistic, Arcade and Sandbox.', live_url: 'https://global-strike-v0-1.vercel.app', links: [{ label: 'Web version', url: 'https://global-strike-v0-1.vercel.app' }, { label: 'Mobile / iOS preview', url: 'https://global-strike-ios.vercel.app' }], html_url: 'https://github.com/nixocode/global-strike-game', image: imageFor('global-strike-game') },
   { name: 'vietnam-65', category: 'games', title: "Vietnam '65", categoryBadge: 'Lane-Tactics War Game · In Development', techStack: ['Canvas', 'JavaScript', 'Game Design'], description: "A lane-tactics war game in the tradition of Warfare 1944 — Campaign, Skirmish and Field Manual modes, depicting 1965–69 with documentary intent.", live_url: 'https://nixocode.github.io/vietnam-65-lanes-of-war/', image: imageFor('vietnam-65') },
   { name: 'global-conflict-tracker', category: 'games', title: 'Global Conflict Tracker', categoryBadge: 'Geopolitical Simulation', techStack: ['D3.js', 'JavaScript', 'CSS'], description: 'An interactive, real-time 3D globe visualizing active geopolitical conflicts and regional tensions — work in progress.' },
 
@@ -232,8 +232,10 @@ export function renderProjects(projects, container) {
         </div>
         <p class="project-description">${escapeHTML(repo.description)}</p>
         <div class="project-links interactive">
-          ${repo.live_url ? `<a href="${safeURL(repo.live_url)}" target="_blank" rel="noopener noreferrer">View Live<span class="arrow">→</span></a>` : ''}
-          ${!repo.live_url && repo.html_url ? `<a href="${safeURL(repo.html_url)}" target="_blank" rel="noopener noreferrer">View Source<span class="arrow">→</span></a>` : ''}
+          ${Array.isArray(repo.links) && repo.links.length
+            ? repo.links.map(l => `<a href="${safeURL(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(l.label)}<span class="arrow">→</span></a>`).join('')
+            : `${repo.live_url ? `<a href="${safeURL(repo.live_url)}" target="_blank" rel="noopener noreferrer">View Live<span class="arrow">→</span></a>` : ''}
+               ${!repo.live_url && repo.html_url ? `<a href="${safeURL(repo.html_url)}" target="_blank" rel="noopener noreferrer">View Source<span class="arrow">→</span></a>` : ''}`}
         </div>
       </div>
     `;
