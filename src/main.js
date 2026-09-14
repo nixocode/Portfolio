@@ -1,23 +1,22 @@
 // Orchestrator. Keeps module wiring in one place, does no heavy lifting itself.
 //
 // Flow:
-//   1. Start loader + begin fetching projects in parallel
-//   2. Scene.js sets up Three.js (HDR etc) using the loader's LoadingManager
-//   3. When all assets done → loader fades, hero reveals, Lenis starts,
-//      project nodes + scroll reveals come online
+//   1. Render the curated project list into the lanes
+//   2. Scene.js sets up Three.js with a LoadingManager
+//   3. Once the scene, lanes and ticker are wired → hero reveals and
+//      scroll reveals come online straight away (no loading screen)
 
 import './style.css';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { LoadingManager } from 'three';
 
-import { Loader } from './core/Loader.js';
 import { Scene } from './webgl/Scene.js';
 import { NeuralField } from './webgl/NeuralField.js';
 import { FiberNetwork } from './webgl/FiberNetwork.js';
 import { ProjectNodes } from './webgl/ProjectNodes.js';
 import { Biomes } from './webgl/Biomes.js';
 import { SmoothScroll } from './core/SmoothScroll.js';
-import { Cursor } from './core/Cursor.js';
 import { loadProjects, renderProjects } from './ui/Projects.js';
 import { initHero, revealHero } from './ui/Hero.js';
 import { revealProjects, currentProjectIndex } from './ui/ScrollReveal.js';
@@ -36,20 +35,12 @@ const smoothstep = (t) => {
 
 async function bootstrap() {
   const canvas = document.getElementById('webgl');
-  new Cursor();
 
-  // --- Loader kicked off first so HDR loads through its LoadingManager ---
-  let sceneReadyResolve;
-  const sceneReady = new Promise((r) => (sceneReadyResolve = r));
+  // Any Three.js loaders the scene uses go through this manager. There's no
+  // loading screen anymore — the reveal runs once bootstrap finishes below.
+  const loadingManager = new LoadingManager();
 
-  const loader = new Loader(() => {
-    // Loader has faded. Reveal hero and start scroll + reveals.
-    revealHero();
-    revealProjects();
-    ScrollTrigger.refresh();
-  });
-
-  // --- Fetch projects in parallel with scene setup ---
+  // --- Load projects (curated list) alongside the first frame ---
   const [projects] = await Promise.all([
     loadProjects(),
     new Promise((r) => requestAnimationFrame(r)),
@@ -61,7 +52,7 @@ async function bootstrap() {
   const ordered = renderProjects(projects, container);
 
   // --- Three.js scene ---
-  const scene = new Scene(canvas, loader.manager);
+  const scene = new Scene(canvas, loadingManager);
   // Global ambient field is lighter now — per-biome clusters supplement it.
   // Scale the ambient field to the device. `lowEnd` already folds in
   // reduced-motion, low core/memory counts and mobile, so weak hardware gets a
@@ -395,92 +386,6 @@ async function bootstrap() {
     chip.addEventListener('click', () => setActiveZone(zone));
   });
 
-  // --- Mouse edge navigation (desktop only) ---
-  const zoneAccents = {
-    marketing: '#ff6a5e', webdesign: '#5fd896',
-    games: '#5aa8ff', class: '#c89aff',
-  };
-
-  const desktopPointer = window.matchMedia('(hover: hover) and (pointer: fine)');
-  if (desktopPointer.matches) {
-    const EDGE_ZONE = 0.14;
-    const COOLDOWN_MS = 400;
-    let edgeCooldown = 0;
-
-    const leftGlow = document.createElement('div');
-    leftGlow.className = 'edge-glow edge-glow-left';
-    document.body.appendChild(leftGlow);
-
-    const rightGlow = document.createElement('div');
-    rightGlow.className = 'edge-glow edge-glow-right';
-    document.body.appendChild(rightGlow);
-
-    const updateEdgeColors = () => {
-      const idx = ZONES.indexOf(activeZone);
-      const leftZone = idx > 0 ? ZONES[idx - 1] : null;
-      const rightZone = idx < ZONES.length - 1 ? ZONES[idx + 1] : null;
-      leftGlow.style.setProperty('--edge-accent', leftZone ? zoneAccents[leftZone] : '#fff');
-      rightGlow.style.setProperty('--edge-accent', rightZone ? zoneAccents[rightZone] : '#fff');
-    };
-    updateEdgeColors();
-
-    const origSetActiveZone = setActiveZone;
-    const setActiveZoneWrapped = (zone, opts) => {
-      origSetActiveZone(zone, opts);
-      updateEdgeColors();
-    };
-    // Patch all places that call setActiveZone isn't feasible, so hook
-    // into reflectChipState which runs on every zone change.
-    const origReflect = reflectChipState;
-
-    // rAF-throttled: this handler runs a multi-selector `closest()` walk, which
-    // is wasteful at raw mousemove rate (can fire >1x per frame).
-    let _edgeRaf = 0, _edgeEvt = null;
-    const onEdgeMove = (e) => {
-      if (birdsEyeActive) {
-        leftGlow.classList.remove('visible');
-        rightGlow.classList.remove('visible');
-        return;
-      }
-
-      if (e.target.closest('.hero, .top-nav, .branch-picker, .info-panel, .birdseye, button, a')) {
-        leftGlow.classList.remove('visible');
-        rightGlow.classList.remove('visible');
-        return;
-      }
-
-      const vw = window.innerWidth;
-      const x = e.clientX / vw;
-      const now = performance.now();
-      const idx = ZONES.indexOf(activeZone);
-      const canLeft = idx > 0;
-      const canRight = idx < ZONES.length - 1;
-
-      const inLeft = x < EDGE_ZONE && canLeft;
-      const inRight = x > (1 - EDGE_ZONE) && canRight;
-
-      leftGlow.classList.toggle('visible', inLeft);
-      rightGlow.classList.toggle('visible', inRight);
-
-      if (now - edgeCooldown < COOLDOWN_MS) return;
-
-      if (inLeft) {
-        edgeCooldown = now;
-        setActiveZone(ZONES[idx - 1]);
-        updateEdgeColors();
-      } else if (inRight) {
-        edgeCooldown = now;
-        setActiveZone(ZONES[idx + 1]);
-        updateEdgeColors();
-      }
-    };
-    window.addEventListener('mousemove', (e) => {
-      _edgeEvt = e;
-      if (_edgeRaf) return;
-      _edgeRaf = requestAnimationFrame(() => { _edgeRaf = 0; onEdgeMove(_edgeEvt); });
-    }, { passive: true });
-  }
-
   // --- Top Down View ---
   // The old in-page bird's-eye overlay is replaced by a dedicated page
   // (topdown.html → the 3D node metaverse) that the nav/hero links open in a
@@ -556,7 +461,10 @@ async function bootstrap() {
     console.log('%cPoking around under the hood? I like you already.\nHand-built: vanilla JS, real-time WebGL, no UI frameworks.\nLet’s talk → nicowork277@gmail.com', 'font:13px ui-monospace,monospace;color:#aab0b8;line-height:1.6');
   } catch { /* no console — fine */ }
 
-  sceneReadyResolve();
+  // --- Scene ready: reveal hero, start scroll reveals ---
+  revealHero();
+  revealProjects();
+  ScrollTrigger.refresh();
 }
 
 document.addEventListener('DOMContentLoaded', bootstrap);

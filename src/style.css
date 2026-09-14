@@ -1,4 +1,28 @@
 /* =========================================================================
+   Clash Display (Indian Type Foundry, ITF Free Font License — see
+   public/fonts/ClashDisplay-LICENSE-FFL.txt). Self-hosted, variable 200–700.
+   Used ONLY for the hero name, hero subtitle and project card titles.
+   ========================================================================= */
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/ClashDisplay-Variable.woff2') format('woff2'); /* Vite serves public/ under base → /Portfolio/fonts/… */
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+/* Metric-matched fallback: Arial scaled to Clash Display's widths and
+   vertical metrics, so the swap-in when the webfont arrives doesn't move
+   the layout (no loading screen hides it anymore). */
+@font-face {
+  font-family: 'Clash Display Fallback';
+  src: local('Arial'), local('ArialMT'), local('Helvetica'), local('Arimo'), local('Liberation Sans');
+  size-adjust: 108%;
+  ascent-override: 82.4%;
+  descent-override: 23.1%;
+  line-gap-override: 0%;
+}
+
+/* =========================================================================
    Neural Portfolio — design tokens
    Palette: obsidian base, ice-cyan tech accent, sparing amber human warmth.
    ========================================================================= */
@@ -20,6 +44,7 @@
   --border-glass:  rgba(232, 234, 237, 0.08);
   --border-strong: rgba(232, 234, 237, 0.22);
 
+  --font-title:    'Clash Display', 'Clash Display Fallback', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', system-ui, sans-serif;
   --font-display:  ui-rounded, -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro', 'Helvetica Neue', 'Inter', system-ui, sans-serif;
   --font-body:     -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro', 'Helvetica Neue', 'Inter', system-ui, sans-serif;
   /* `--font-mono` now points at the Apple SF Pro stack too — the old SF Mono /
@@ -46,23 +71,6 @@ html, body {
 }
 
 body { min-height: 100vh; }
-
-/* Hide native cursor wherever the custom one is active (desktop only),
-   but respect users who explicitly prefer high-visibility cursors. */
-@media (hover: hover) and (pointer: fine) {
-  body:not(.cursor-disabled),
-  body:not(.cursor-disabled) a,
-  body:not(.cursor-disabled) button { cursor: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  body, a, button { cursor: auto !important; }
-  .cursor-dot, .cursor-ring { display: none !important; }
-}
-/* Users who set a forced-colors / high contrast mode get the native cursor back. */
-@media (forced-colors: active) {
-  body, a, button { cursor: auto !important; }
-  .cursor-dot, .cursor-ring { display: none !important; }
-}
 
 /* Skip to content — visible only on focus */
 .skip-link {
@@ -110,108 +118,6 @@ body { min-height: 100vh; }
   pointer-events: none;
 }
 .interactive, a, button, .info-panel { pointer-events: auto; }
-
-/* =========================================================================
-   Cursor
-   ========================================================================= */
-.cursor-dot,
-.cursor-ring {
-  position: fixed;
-  top: 0; left: 0;
-  pointer-events: none;
-  z-index: 9999;
-  will-change: transform;
-  mix-blend-mode: difference;
-}
-.cursor-dot {
-  width: 6px; height: 6px;
-  background: #fff;
-  border-radius: 50%;
-}
-.cursor-ring {
-  width: 36px; height: 36px;
-  border: 1.5px solid #fff;
-  border-radius: 50%;
-  transition: width 0.3s var(--ease-expo),
-              height 0.3s var(--ease-expo),
-              border-color 0.3s var(--ease-expo),
-              background 0.3s var(--ease-expo);
-}
-body.cursor-hover .cursor-ring {
-  width: 64px; height: 64px;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: #fff;
-}
-body.cursor-node .cursor-ring {
-  width: 80px; height: 80px;
-  border-color: var(--accent-warm);
-  background: rgba(255, 200, 138, 0.12);
-  mix-blend-mode: normal;
-}
-body.cursor-node .cursor-dot {
-  background: var(--accent-warm);
-  mix-blend-mode: normal;
-}
-@media (hover: none), (pointer: coarse) {
-  .cursor-dot, .cursor-ring { display: none; }
-}
-
-/* =========================================================================
-   Cinematic loader
-   ========================================================================= */
-.loader {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  pointer-events: auto;
-  overflow: hidden;
-}
-.loader-panel {
-  position: absolute;
-  left: 0; right: 0;
-  height: 50%;
-  background: var(--bg-deep);
-}
-.loader-panel-top    { top: 0; }
-.loader-panel-bottom { bottom: 0; }
-.loader-inner {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1.75rem;
-  z-index: 1;
-}
-.loader-label {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  color: var(--accent-neutral);
-  text-transform: uppercase;
-}
-.loader-bar {
-  width: clamp(180px, 24vw, 340px);
-  height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-}
-.loader-bar-fill {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-neutral), #fff);
-  transform: scaleX(0);
-  transform-origin: left center;
-  box-shadow: 0 0 16px rgba(212, 219, 229, 0.35);
-}
-.loader-pct-wrap {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  letter-spacing: 0.15em;
-}
-.loader-pct { color: var(--text-primary); }
 
 /* =========================================================================
    Top nav
@@ -459,11 +365,11 @@ body.cursor-node .cursor-dot {
   text-shadow: 0 0 16px rgba(0, 0, 0, 0.65);
 }
 .hero h1 {
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 5.6vw, 4.6rem);
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 1.02;
+  font-family: var(--font-title);
+  font-size: clamp(2.6rem, 6.4vw, 5.4rem);
+  font-weight: 400;
+  letter-spacing: -0.022em;
+  line-height: 1;
   color: #f6f7f9;
   max-width: 14ch;
   margin-bottom: 1.25rem;
@@ -480,15 +386,25 @@ body.cursor-node .cursor-dot {
   will-change: transform, opacity;
 }
 .hero-subtitle {
-  font-family: var(--font-body);
-  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  font-family: var(--font-title);
+  font-size: clamp(1.15rem, 1.65vw, 1.45rem);
   font-weight: 400;
+  letter-spacing: 0.004em;
   color: var(--text-secondary);
-  max-width: 52ch;
-  line-height: 1.65;
+  max-width: 30em; /* em, not ch: ch would change when the webfont swaps in */
+  line-height: 1.45;
   margin-bottom: 2.5rem;
   text-shadow: 0 1px 24px rgba(0, 0, 0, 0.85), 0 0 60px rgba(5, 7, 13, 0.6);
 }
+/* Hero copy starts hidden so revealHero() fades it in without first flashing
+   visible → hidden → visible (there's no loading screen covering it now).
+   Failsafe: if the script never runs, the copy shows itself after 2.5s. */
+.hero-subtitle,
+.hero-actions {
+  opacity: 0;
+  animation: hero-copy-failsafe 0.4s ease 2.5s forwards;
+}
+@keyframes hero-copy-failsafe { to { opacity: 1; } }
 .hero-actions {
   display: flex;
   gap: 0.75rem;
@@ -728,14 +644,6 @@ body.cursor-node .cursor-dot {
   justify-content: center;
   align-items: center;
 }
-.branch-picker-hint {
-  font-family: var(--font-mono);
-  font-size: 0.52rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  opacity: 0.4;
-}
 .branch-chip {
   --chip-accent: #cfd4dc;
   position: relative;
@@ -791,7 +699,6 @@ body.cursor-node .cursor-dot {
 @media (max-width: 640px) {
   .branch-picker { padding: 0.9rem 1rem; margin-top: 2rem; }
   .branch-chip { font-size: 0.78rem; padding: 0.55rem 0.85rem 0.55rem 0.7rem; }
-  .branch-picker-hint { display: none; }
 }
 
 /* Better legibility of the "// Selected work — … " category header below
@@ -1169,11 +1076,11 @@ body.cursor-node .cursor-dot {
 }
 
 .project-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.8rem, 3.5vw, 2.7rem);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
+  font-family: var(--font-title);
+  font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.012em;
   color: var(--text-primary);
   margin-bottom: 1.25rem;
 }
@@ -1181,6 +1088,10 @@ body.cursor-node .cursor-dot {
   display: inline-block;
   overflow: hidden;
   vertical-align: top;
+  /* Clash's descenders (g, y, p) dip below a 1.08 line box — widen the
+     reveal mask without changing the line box so they're never clipped. */
+  padding-block: 0.06em 0.12em;
+  margin-block: -0.06em -0.12em;
 }
 .project-title .char {
   display: inline-block;
@@ -1465,41 +1376,10 @@ body.cursor-node .cursor-dot {
 }
 
 @media screen and (max-width: 520px) {
-  .hero h1 { font-size: clamp(2rem, 9vw, 3rem); }
-  .hero-subtitle { font-size: 0.95rem; }
+  .hero h1 { font-size: clamp(2.4rem, 11vw, 3.2rem); letter-spacing: -0.018em; }
+  .hero-subtitle { font-size: 1.08rem; }
   .hero-btn { padding: 0.7rem 1rem; font-size: 0.78rem; }
   .hero-btn svg { width: 14px; height: 14px; }
-}
-
-/* =========================================================================
-   Mouse edge navigation glows
-   ========================================================================= */
-.edge-glow {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  width: 80px;
-  z-index: 18;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.35s var(--ease-smooth);
-}
-.edge-glow.visible { opacity: 1; }
-.edge-glow-left {
-  left: 0;
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--edge-accent, #fff) 12%, transparent),
-    transparent
-  );
-}
-.edge-glow-right {
-  right: 0;
-  background: linear-gradient(
-    to left,
-    color-mix(in srgb, var(--edge-accent, #fff) 12%, transparent),
-    transparent
-  );
 }
 
 /* =========================================================================
@@ -1743,7 +1623,7 @@ html {
 /* Chrome/UI must never look text-selectable — dragging across it to switch
    categories used to paint the default blue selection over everything. */
 .top-nav, .branch-picker, .hero-actions, .nav-chip, .branch-chip,
-.nav-birdseye, .birdseye-chip, .hero-btn, .cursor-dot, .cursor-ring,
+.nav-birdseye, .birdseye-chip, .hero-btn,
 .project-index, .category-badge, .tech-badge {
   -webkit-user-select: none;
   user-select: none;

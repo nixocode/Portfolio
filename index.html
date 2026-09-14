@@ -11,7 +11,8 @@
        add another embeddable project. -->
   <link rel="icon" type="image/svg+xml" href="/Portfolio/favicon.svg" />
   <link rel="apple-touch-icon" href="/Portfolio/apple-touch-icon.png" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.github.com; frame-src https://nixocode.github.io https://global-strike-ios.vercel.app https://global-strike-v0-1.vercel.app https://global-strike-game.vercel.app https://vietnam-65.vercel.app; object-src 'none'; base-uri 'self'; form-action 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-src https://nixocode.github.io https://global-strike-ios.vercel.app https://global-strike-v0-1.vercel.app; object-src 'none'; base-uri 'self'; form-action 'none'" />
+  <link rel="preload" href="/fonts/ClashDisplay-Variable.woff2" as="font" type="font/woff2" crossorigin />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description"
     content="Nicolas Pertierra Porrua — Multilingual digital marketer, content creator and developer based in Barcelona, blending creative craft with AI-driven workflows." />
@@ -44,19 +45,6 @@
 
   <!-- Skip to content — visible only on keyboard focus -->
   <a href="#main-content" class="skip-link">Skip to content</a>
-
-  <!-- Cinematic loader: tracks real asset + font readiness -->
-  <div class="loader" id="loader" aria-hidden="true">
-    <div class="loader-panel loader-panel-top"></div>
-    <div class="loader-panel loader-panel-bottom"></div>
-    <div class="loader-inner">
-      <div class="loader-label">INITIALIZING NEURAL FIELD</div>
-      <div class="loader-bar"><div class="loader-bar-fill"></div></div>
-      <div class="loader-pct-wrap">
-        <span class="loader-pct">000</span><span class="loader-pct-suffix">%</span>
-      </div>
-    </div>
-  </div>
 
   <canvas id="webgl" aria-hidden="true" role="presentation" tabindex="-1"></canvas>
 
@@ -291,7 +279,6 @@
             <span>Top Down View</span>
           </a>
         </div>
-        <div class="branch-picker-hint">Hover · ← → or A/D to branch · ↓ or S to descend</div>
       </nav>
 
     </section>

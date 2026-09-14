@@ -1,13 +1,9 @@
-// GitHub projects: fetch, cache in sessionStorage, render with reserved
-// skeleton height so there's zero layout shift on hydration.
+// Curated projects: the hand-maintained list below, rendered into the XMB
+// lanes with reserved height so there's zero layout shift on hydration.
 
-const USERNAME = 'nixocode';
-const CACHE_KEY = 'nixocode-repos-v5';
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 const ASSET = (p) => `${import.meta.env.BASE_URL}${p}`;
 
-// Map of repo-name → local screenshot. Used for both knownProjects and
-// fetched extras (looked up by name). Keep lowercased to match lookups.
+// Map of project name → local screenshot. Keep lowercased to match lookups.
 const PROJECT_IMAGES = {
   'content-marketing':        ASSET('projects/content-marketing.jpg'),
   'tailor':                   ASSET('projects/tailor.jpg'),
@@ -43,7 +39,6 @@ export const knownProjects = [
   // --- Game Design ---
   { name: 'global-strike-game', category: 'games', title: 'Global Strike — Nuclear Strategy', categoryBadge: 'Real-Time Strategy Sim · In Development', techStack: ['Three.js', 'WebGL', 'JavaScript'], description: 'A real-time 3D-globe nuclear strategy sim — DEFCON escalation and a live intel feed, across four modes: Campaign, Realistic, Arcade and Sandbox.', live_url: 'https://global-strike-v0-1.vercel.app', links: [{ label: 'Web version', url: 'https://global-strike-v0-1.vercel.app' }, { label: 'Mobile version', url: 'https://global-strike-ios.vercel.app' }], html_url: 'https://github.com/nixocode/global-strike-game', image: imageFor('global-strike-game') },
   { name: 'vietnam-65', category: 'games', title: "Vietnam '65", categoryBadge: 'Lane-Tactics War Game · In Development', techStack: ['Canvas', 'JavaScript', 'Game Design'], description: "A lane-tactics war game in the tradition of Warfare 1944 — Campaign, Skirmish and Field Manual modes, depicting 1965–69 with documentary intent.", live_url: 'https://nixocode.github.io/vietnam-65-lanes-of-war/', links: [{ label: 'Web version', url: 'https://nixocode.github.io/vietnam-65-lanes-of-war/' }, { label: 'Mobile version', url: 'https://nixocode.github.io/vietnam-65-mobile-game/' }], image: imageFor('vietnam-65') },
-  { name: 'global-conflict-tracker', category: 'games', title: 'Global Conflict Tracker', categoryBadge: 'Geopolitical Simulation', techStack: ['D3.js', 'JavaScript', 'CSS'], description: 'An interactive, real-time 3D globe visualizing active geopolitical conflicts and regional tensions — work in progress.' },
 
   // --- Web, Apps & AI (AI + safety platforms live here) ---
   { name: 'Ai2B', category: 'webdesign', title: 'Ai2B', categoryBadge: 'Custom AI Studio', techStack: ['Next.js', 'AI', 'Vercel'], description: 'Custom AI software for real businesses — bespoke agents and end-to-end systems forged to each company\'s stack, no templates, no fluff.', live_url: 'https://ai2-b.vercel.app', html_url: 'https://github.com/nixocode/Ai2B', image: imageFor('ai2b') },
@@ -58,96 +53,9 @@ export const knownProjects = [
   { name: 'law-civil-law', category: 'class', title: 'Civil Law Explainer', categoryBadge: 'Legal Study', techStack: ['HTML', 'CSS', 'Research'], description: 'Visual explainers compiled for a civil law course — dense statutory material distilled into scannable screens.', live_url: 'https://nixocode.github.io/Law-Civil-Web/', html_url: 'https://github.com/nixocode/Law-Civil-Web', image: imageFor('law-civil-law') },
 ];
 
-function readCache() {
-  try {
-    const raw = sessionStorage.getItem(CACHE_KEY);
-    if (!raw) return null;
-    const { ts, data } = JSON.parse(raw);
-    if (Date.now() - ts > CACHE_TTL) return null;
-    return data;
-  } catch {
-    return null;
-  }
-}
-
-function writeCache(data) {
-  try {
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-  } catch { /* quota exceeded — fine */ }
-}
-
+// Only the curated list is shown. Kept async because main.js awaits it.
 export async function loadProjects() {
-  const cached = readCache();
-  if (cached) return cached;
-
-  try {
-    const res = await fetch(
-      `https://api.github.com/users/${USERNAME}/repos?sort=updated&per_page=12`
-    );
-    if (!res.ok) throw new Error('GitHub API failed');
-    const data = await res.json();
-
-    // Case-insensitive name match + html_url match keeps the curated
-    // knownProjects from being duplicated as auto-fetched extras when the
-    // hardcoded `name` differs in case from the actual GitHub repo
-    // (pool-guide → C-pool-Prep, fresc → Fresc, la-zona-segura → LZS, etc).
-    const knownNames = new Set(
-      knownProjects.map(p => (p.name || '').toLowerCase())
-    );
-    const knownUrls = new Set(
-      knownProjects.map(p => p.html_url).filter(Boolean)
-    );
-    const extras = data
-      .filter(r =>
-        !r.fork &&
-        !r.name.toLowerCase().includes('portfolio') &&
-        !knownNames.has(r.name.toLowerCase()) &&
-        !knownUrls.has(r.html_url)
-      )
-      .map(r => {
-        // Build a richer tech stack: language + inferred tags from topics.
-        const topics = Array.isArray(r.topics) ? r.topics : [];
-        const stack = [];
-        if (r.language) stack.push(r.language);
-        topics.slice(0, 3).forEach(t => {
-          const label = t
-            .replace(/-/g, ' ')
-            .replace(/\b\w/g, l => l.toUpperCase());
-          if (!stack.some(s => s.toLowerCase() === label.toLowerCase())) {
-            stack.push(label);
-          }
-        });
-        if (stack.length === 0) stack.push('Web', 'Open Source');
-
-        const title = r.name
-          .replace(/[-_]/g, ' ')
-          .replace(/\b\w/g, l => l.toUpperCase());
-
-        const description = r.description
-          ? r.description
-          : `An experimental build exploring ${title.toLowerCase()} — part of an ongoing open source portfolio.`;
-
-        // Fetched repos land in the "others" branch — the catch-all for
-        // recent/applied/open-source explorations.
-        return {
-          name: r.name,
-          category: 'class',
-          title,
-          categoryBadge: 'Applied Studies & Open Source',
-          techStack: stack,
-          description,
-          live_url: r.homepage || (r.has_pages ? `https://${USERNAME}.github.io/${r.name}/` : null),
-          html_url: r.html_url,
-          image: imageFor(r.name),
-        };
-      });
-
-    const merged = [...knownProjects, ...extras.slice(0, 4)];
-    writeCache(merged);
-    return merged;
-  } catch {
-    return [...knownProjects];
-  }
+  return [...knownProjects];
 }
 
 function escapeHTML(str) {
@@ -162,8 +70,8 @@ function escapeHTML(str) {
 }
 
 // Scheme-allowlisted URL sanitizer — protects the inline href interpolation
-// against anything exotic coming back from the GitHub API (javascript:, data:,
-// etc). Falls back to '#' so the anchor renders but can't navigate anywhere.
+// against anything exotic (javascript:, data:, etc). Falls back to '#' so the
+// anchor renders but can't navigate anywhere.
 function safeURL(url) {
   if (!url) return '';
   try {
