@@ -29,3 +29,8 @@ Marketing_content/
 
 # Internal dev notes — never commit or deploy
 devnotes_DONOTUPLOAD*
+
+# Local environment files: API keys never belong in git
+.env
+.env.*
+!.env.example
